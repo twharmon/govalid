@@ -9,5 +9,5 @@ func (nc *nilConstraint) validate(val reflect.Value) error {
 }
 
 func makeNilConstraint(name string) {
-	store.Add(name, new(nilConstraint))
+	constraintStore.Add(name, new(nilConstraint))
 }

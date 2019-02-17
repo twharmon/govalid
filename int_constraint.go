@@ -84,6 +84,6 @@ func makeIntConstraint(name string, field reflect.StructField) error {
 		}
 		ic.in = inIntSlice
 	}
-	store.Add(name, ic)
+	constraintStore.Add(name, ic)
 	return nil
 }

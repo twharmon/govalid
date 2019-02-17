@@ -4,7 +4,7 @@ import "reflect"
 
 // MustPrepare .
 func MustPrepare(models ...interface{}) error {
-	store = make(constraintMap)
+	constraintStore = make(constraintMap)
 	for _, model := range models {
 		if err := mustPrepare(model); err != nil {
 			return err

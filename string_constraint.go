@@ -87,6 +87,6 @@ func makeStringConstraint(name string, field reflect.StructField) error {
 		}
 		sc.regex = re
 	}
-	store.Add(name, sc)
+	constraintStore.Add(name, sc)
 	return nil
 }

@@ -84,6 +84,6 @@ func makeInt64Constraint(name string, field reflect.StructField) error {
 		}
 		i64c.in = inInt64Slice
 	}
-	store.Add(name, i64c)
+	constraintStore.Add(name, i64c)
 	return nil
 }

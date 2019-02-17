@@ -4,7 +4,7 @@ import "reflect"
 
 type constraintMap map[string][]constraint
 
-var store constraintMap
+var constraintStore constraintMap
 
 func (cs constraintMap) Add(model string, c constraint) {
 	cs[model] = append(cs[model], c)
