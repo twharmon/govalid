@@ -5,8 +5,8 @@ import (
 	"reflect"
 )
 
-// MustValidate .
-func MustValidate(s interface{}) error {
+// Validate .
+func Validate(s interface{}) error {
 	val := reflect.ValueOf(s).Elem()
 	name := reflect.TypeOf(s).Elem().Name()
 	constraints := constraintStore[name]

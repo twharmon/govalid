@@ -6,30 +6,31 @@ import (
 )
 
 type user struct {
-	ID     int64  `json:"id"`
-	Name   string `json:"name" req:"no" min:"5" max:"15"`
-	Email  string `json:"email" req:"true" min:"3" max:"25" regex:"@"`
-	Age    int    `json:"age" req:"true" min:"18" max:"120"`
-	Active bool   `json:"active"`
-	Test   int64  `json:"test" req:"true" min:"1" max:"8793465928238947520"`
+	ID             int64
+	Name           string `req:"true" min:"5" max:"15" regex:"^[a-zA-Z]+$"`
+	Email          string `req:"true" min:"3" max:"25" regex:".+?@.+?"`
+	Age            int    `req:"false" min:"3" max:"120"`
+	Role           string `req:"true" in:"admin,user"`
+	FavoriteNumber int64  `req:"true" min:"1" max:"999999999999999"`
 }
 
 func init() {
-	if err := MustPrepare(&user{}); err != nil {
+	if err := Register(&user{}); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-// BenchmarkValidate .
-func BenchmarkValidate(b *testing.B) {
-	u := new(user)
-	u.ID = 5
-	u.Name = "Gopher"
-	u.Email = "gopher@example.com"
-	u.Age = 44
-	u.Active = true
-	u.Test = 44
+// BenchmarkGovalid .
+func BenchmarkGovalid(b *testing.B) {
+	u := &user{
+		ID:             5,
+		Name:           "Gopher",
+		Email:          "gopher@example.com",
+		Age:            45,
+		Role:           "user",
+		FavoriteNumber: 918273645,
+	}
 	for n := 0; n < b.N; n++ {
-		MustValidate(u)
+		Validate(u)
 	}
 }

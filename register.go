@@ -2,19 +2,25 @@ package govalid
 
 import "reflect"
 
-// MustPrepare .
-func MustPrepare(models ...interface{}) error {
+// Register is required for all structs that you wish
+// to validate. It is intended to be ran at load time
+// and cashes information about the structs to reduce
+// run time allocations.
+//
+// NOTE: This is not thread safe. You must
+// register structs before validating.
+func Register(structs ...interface{}) error {
 	constraintStore = make(constraintMap)
-	for _, model := range models {
-		if err := mustPrepare(model); err != nil {
+	for _, s := range structs {
+		if err := register(s); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func mustPrepare(model interface{}) error {
-	typ := reflect.TypeOf(model).Elem()
+func register(s interface{}) error {
+	typ := reflect.TypeOf(s).Elem()
 	name := typ.Name()
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
