@@ -75,7 +75,7 @@ user := &User{
 userViolations, err := govalid.Validate(user)
 if err != nil {
     // two errors are possible
-    // 1) you did not register User
+    // 1) you did not register User yet (govalid.Register(User{}))
     // 2) you did not pass a pointer to User
     fmt.Println(err)
     return
