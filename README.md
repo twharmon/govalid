@@ -7,23 +7,23 @@ Govalid uses that information to reduce run time allocations and computing.
 Govalid currently supports the following constraints.
 
 `int`
-- req:"<bool>" - `req:"true"`
-- min:"<int>" - `min:"5"`
-- max:"<int>" - `max:"50"`
-- in:"<int>,<int>,..." - `in:"1,2,3,4,5"`
+- req:"[bool]" - `req:"true"`
+- min:"[int]" - `min:"5"`
+- max:"[int]" - `max:"50"`
+- in:"[int],[int],..." - `in:"1,2,3,4,5"`
 
 `int64`
-- req:"<bool>" - `req:"true"`
-- min:"<int64>" - `min:"5"`
-- max:"<int64>" - `max:"50"`
-- in:"<int64>,<int64>,..." - `in:"1,2,3,4,5"`
+- req:"[bool]" - `req:"true"`
+- min:"[int64]" - `min:"5"`
+- max:"[int64]" - `max:"50"`
+- in:"[int64],[int64],..." - `in:"1,2,3,4,5"`
 
 
 `string`
-- req:"<bool>" - `req:"true"`
-- min:"<int>" - `min:"5"`
-- max:"<int>" - `max:"50"`
-- in:"<string>,<string>,..." - `in:"user,editor,admin"`
-- regex:"<string>" - `regex:"^[a-zA-Z0-9]+$"`
+- req:"[bool]" - `req:"true"`
+- min:"[int]" - `min:"5"`
+- max:"[int]" - `max:"50"`
+- in:"[string],[string],..." - `in:"user,editor,admin"`
+- regex:"[string]" - `regex:"^[a-zA-Z0-9]+$"`
 
 See [examples](https://github.com/twharmon/govalid/tree/master/examples)
