@@ -23,6 +23,7 @@ func (ic *intConstraint) validate(val reflect.Value) []string {
 	}
 	if ic.req && i == 0 {
 		vs = append(vs, fmt.Sprintf("%s is required", ic.field))
+		return vs
 	}
 	if ic.max > 0 && i > ic.max {
 		vs = append(vs, fmt.Sprintf("%s can not be greater than %d", ic.field, ic.max))
@@ -47,43 +48,4 @@ func (ic *intConstraint) validate(val reflect.Value) []string {
 		}
 	}
 	return vs
-}
-
-func makeIntConstraint(name string, field reflect.StructField) {
-	ic := new(intConstraint)
-	ic.field = strings.ToLower(field.Name)
-	req, ok := field.Tag.Lookup("req")
-	if ok {
-		ic.req = req == "true"
-	}
-	maxStr, ok := field.Tag.Lookup("max")
-	if ok {
-		max, err := strconv.Atoi(maxStr)
-		if err != nil {
-			panic(err)
-		}
-		ic.max = max
-	}
-	minStr, ok := field.Tag.Lookup("min")
-	if ok {
-		min, err := strconv.Atoi(minStr)
-		if err != nil {
-			panic(err)
-		}
-		ic.min = min
-	}
-	inStr, ok := field.Tag.Lookup("in")
-	if ok {
-		inStrSlice := strings.Split(inStr, ",")
-		inIntSlice := []int{}
-		for _, iStr := range inStrSlice {
-			i, err := strconv.Atoi(iStr)
-			if err != nil {
-				panic(err)
-			}
-			inIntSlice = append(inIntSlice, i)
-		}
-		ic.in = inIntSlice
-	}
-	modelStore.add(name, ic)
 }

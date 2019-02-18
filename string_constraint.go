@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
 	"unicode/utf8"
 )
@@ -26,6 +25,7 @@ func (sc *stringConstraint) validate(val reflect.Value) []string {
 	}
 	if sc.req && s == "" {
 		vs = append(vs, fmt.Sprintf("%s is required", sc.field))
+		return vs
 	}
 	strLen := utf8.RuneCountInString(s)
 	if sc.max > 0 && strLen > sc.max {
@@ -50,43 +50,4 @@ func (sc *stringConstraint) validate(val reflect.Value) []string {
 		}
 	}
 	return vs
-}
-
-func makeStringConstraint(name string, field reflect.StructField) {
-	sc := new(stringConstraint)
-	sc.field = strings.ToLower(field.Name)
-	req, ok := field.Tag.Lookup("req")
-	if ok {
-		sc.req = req == "true"
-	}
-	maxStr, ok := field.Tag.Lookup("max")
-	if ok {
-		max, err := strconv.Atoi(maxStr)
-		if err != nil {
-			panic(err)
-		}
-		sc.max = max
-	}
-	minStr, ok := field.Tag.Lookup("min")
-	if ok {
-		min, err := strconv.Atoi(minStr)
-		if err != nil {
-			panic(err)
-		}
-		sc.min = min
-	}
-	inStr, ok := field.Tag.Lookup("in")
-	if ok {
-		in := strings.Split(inStr, ",")
-		sc.in = in
-	}
-	regex, ok := field.Tag.Lookup("regex")
-	if ok {
-		re, err := regexp.Compile(regex)
-		if err != nil {
-			panic(err)
-		}
-		sc.regex = re
-	}
-	modelStore.add(name, sc)
 }

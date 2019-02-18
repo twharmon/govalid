@@ -7,23 +7,36 @@ Govalid uses that information at run time to reduce allocations and computing.
 Govalid currently supports the following constraints.
 
 `int`
-- req:"[bool]" - `req:"true"`
-- min:"[int]" - `min:"5"`
-- max:"[int]" - `max:"50"`
-- in:"[int],[int],..." - `in:"1,2,3,4,5"`
+- req:"[bool]" - `govalid:"req"`
+- min:"[int]" - `govalid:"min:5"`
+- max:"[int]" - `govalid:"max:50"`
+- in:"[int],[int],..." - `govalid:"in:3,4,5"`
 
 `int64`
-- req:"[bool]" - `req:"true"`
-- min:"[int64]" - `min:"5"`
-- max:"[int64]" - `max:"50"`
-- in:"[int64],[int64],..." - `in:"1,2,3,4,5"`
+- req:"[bool]" - `govalid:"req"`
+- min:"[int64]" - `govalid:"min:5"`
+- max:"[int64]" - `govalid:"max:50"`
+- in:"[int64],[int64],..." - `govalid:"in:3,4,5"`
 
+`float32`
+- req:"[bool]" - `govalid:"req"`
+- min:"[float32]" - `govalid:"min:5.0"`
+- max:"[float32]" - `govalid:"max:50.0"`
+
+`float64`
+- req:"[bool]" - `govalid:"req"`
+- min:"[float64]" - `govalid:"min:5.0"`
+- max:"[float64]" - `govalid:"max:50.0"`
 
 `string`
-- req:"[bool]" - `req:"true"`
-- min:"[int]" - `min:"5"`
-- max:"[int]" - `max:"50"`
-- in:"[string],[string],..." - `in:"user,editor,admin"`
-- regex:"[string]" - `regex:"^[a-zA-Z0-9]+$"`
+- req:"[bool]" - `govalid:"req"`
+- min:"[int]" - `govalid:"min:5"`
+- max:"[int]" - `govalid:"max:50"`
+- in:"[string],[string],..." - `govalid:"in:user,editor,admin"`
+- regex:"[string]" - `govalid:"regex:^[a-zA-Z0-9]+$"`
 
-See [examples](https://github.com/twharmon/govalid/tree/master/examples)
+## Examples
+See [examples](https://github.com/twharmon/govalid/tree/master/examples).
+
+## Contribute
+Create a pull request to contribute to Govalid.
