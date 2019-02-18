@@ -11,12 +11,15 @@ import (
 func Validate(s interface{}) ([]string, error) {
 	t := reflect.TypeOf(s)
 	if t.Kind() != reflect.Ptr {
-		return nil, errors.New("s must be a pointer")
+		return nil, errors.New("s must be a pointer to a struct")
 	}
-	name := t.Elem().Name()
-	m := modelStore[name]
+	e := t.Elem()
+	if e.Kind() != reflect.Struct {
+		return nil, errors.New("s must be a pointer to a struct")
+	}
+	m := modelStore[e.Name()]
 	if m == nil {
-		return nil, fmt.Errorf("%s was not registered", name)
+		return nil, fmt.Errorf("%s was not registered", e.Name())
 	}
 	return m.validate(s), nil
 }

@@ -39,12 +39,12 @@ Govalid currently supports the following constraints.
 Here is an example struct with some basic constraints.
 ```
 type User struct {
-	ID             int64
-	Name           string  `govalid:"req,min:5,max:25,regex:^[a-zA-Z ]+$"`
-	Email          string  `govalid:"req,min:3,max:100,regex:.+?@.+?"`
-	Age            int     `govalid:"min:18,max:120"`
-	Role           string  `govalid:"in:admin,editor,user"`
-	Grade          float32 `govalid:"min:0.0,max:100.0"`
+    ID             int64
+    Name           string  `govalid:"req,min:5,max:25,regex:^[a-zA-Z ]+$"`
+    Email          string  `govalid:"req,min:3,max:100,regex:.+?@.+?"`
+    Age            int     `govalid:"min:18,max:120"`
+    Role           string  `govalid:"in:admin,editor,user"`
+    Grade          float32 `govalid:"min:0.0,max:100.0"`
 }
 ```
 
@@ -74,6 +74,9 @@ user := &User{
 }
 userViolations, err := govalid.Validate(user)
 if err != nil {
+    // two errors are possible
+    // 1) you did not register User
+    // 2) you did not pass a pointer to User
     fmt.Println(err)
     return
 }
