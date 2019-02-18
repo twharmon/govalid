@@ -1,7 +1,6 @@
 package govalid
 
 import (
-	"log"
 	"testing"
 )
 
@@ -15,9 +14,7 @@ type user struct {
 }
 
 func init() {
-	if err := Register(&user{}); err != nil {
-		log.Fatalln(err)
-	}
+	Register(user{})
 }
 
 // BenchmarkGovalid .

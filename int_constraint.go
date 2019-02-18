@@ -15,19 +15,20 @@ type intConstraint struct {
 	in    []int
 }
 
-func (ic *intConstraint) validate(val reflect.Value) error {
+func (ic *intConstraint) validate(val reflect.Value) []string {
 	i := val.Interface().(int)
+	var vs []string
 	if !ic.req && i == 0 {
-		return nil
+		return vs
 	}
 	if ic.req && i == 0 {
-		return fmt.Errorf("%s is required", ic.field)
+		vs = append(vs, fmt.Sprintf("%s is required", ic.field))
 	}
 	if ic.max > 0 && i > ic.max {
-		return fmt.Errorf("%s can not be greater than %d", ic.field, ic.max)
+		vs = append(vs, fmt.Sprintf("%s can not be greater than %d", ic.field, ic.max))
 	}
 	if ic.min > 0 && i < ic.min {
-		return fmt.Errorf("%s must be at least %d", ic.field, ic.min)
+		vs = append(vs, fmt.Sprintf("%s must be at least %d", ic.field, ic.min))
 	}
 	if len(ic.in) > 0 {
 		in := false
@@ -42,15 +43,15 @@ func (ic *intConstraint) validate(val reflect.Value) error {
 			for _, a := range ic.in {
 				iStrSlice = append(iStrSlice, strconv.Itoa(a))
 			}
-			return fmt.Errorf("%s must be in [%s]", ic.field, strings.TrimSuffix(strings.Join(iStrSlice, ", "), ", "))
+			vs = append(vs, fmt.Sprintf("%s must be in [%s]", ic.field, strings.TrimSuffix(strings.Join(iStrSlice, ", "), ", ")))
 		}
 	}
-	return nil
+	return vs
 }
 
-func makeIntConstraint(name string, field reflect.StructField) error {
+func makeIntConstraint(name string, field reflect.StructField) {
 	ic := new(intConstraint)
-	ic.field = field.Name
+	ic.field = strings.ToLower(field.Name)
 	req, ok := field.Tag.Lookup("req")
 	if ok {
 		ic.req = req == "true"
@@ -59,7 +60,7 @@ func makeIntConstraint(name string, field reflect.StructField) error {
 	if ok {
 		max, err := strconv.Atoi(maxStr)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		ic.max = max
 	}
@@ -67,7 +68,7 @@ func makeIntConstraint(name string, field reflect.StructField) error {
 	if ok {
 		min, err := strconv.Atoi(minStr)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		ic.min = min
 	}
@@ -78,12 +79,11 @@ func makeIntConstraint(name string, field reflect.StructField) error {
 		for _, iStr := range inStrSlice {
 			i, err := strconv.Atoi(iStr)
 			if err != nil {
-				return err
+				panic(err)
 			}
 			inIntSlice = append(inIntSlice, i)
 		}
 		ic.in = inIntSlice
 	}
-	constraintStore.Add(name, ic)
-	return nil
+	modelStore.add(name, ic)
 }

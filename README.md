@@ -1,7 +1,7 @@
 # Govalid
 Use Govalid to validate structs.
 At load time, Govalid caches information about the structs you pass to `govalid.Register`.
-Govalid uses that information to reduce run time allocations and computing.
+Govalid uses that information at run time to reduce allocations and computing.
 
 ## Usage
 Govalid currently supports the following constraints.

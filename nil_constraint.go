@@ -4,10 +4,10 @@ import "reflect"
 
 type nilConstraint struct{}
 
-func (nc *nilConstraint) validate(val reflect.Value) error {
+func (nc *nilConstraint) validate(val reflect.Value) []string {
 	return nil
 }
 
 func makeNilConstraint(name string) {
-	constraintStore.Add(name, new(nilConstraint))
+	modelStore.add(name, new(nilConstraint))
 }

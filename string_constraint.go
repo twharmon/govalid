@@ -18,20 +18,24 @@ type stringConstraint struct {
 	regex *regexp.Regexp
 }
 
-func (sc *stringConstraint) validate(val reflect.Value) error {
+func (sc *stringConstraint) validate(val reflect.Value) []string {
 	s := val.Interface().(string)
+	var vs []string
 	if !sc.req && s == "" {
-		return nil
+		return vs
 	}
 	if sc.req && s == "" {
-		return fmt.Errorf("%s is required", sc.field)
+		vs = append(vs, fmt.Sprintf("%s is required", sc.field))
 	}
 	strLen := utf8.RuneCountInString(s)
 	if sc.max > 0 && strLen > sc.max {
-		return fmt.Errorf("%s can not be longer than %d characters", sc.field, sc.max)
+		vs = append(vs, fmt.Sprintf("%s can not be longer than %d characters", sc.field, sc.max))
 	}
 	if sc.min > 0 && strLen < sc.min {
-		return fmt.Errorf("%s must be at least %d characters", sc.field, sc.min)
+		vs = append(vs, fmt.Sprintf("%s must be at least %d characters", sc.field, sc.min))
+	}
+	if sc.regex != nil && !sc.regex.MatchString(s) {
+		vs = append(vs, fmt.Sprintf("%s must match regex /%s/", sc.field, sc.regex.String()))
 	}
 	if len(sc.in) > 0 {
 		in := false
@@ -42,18 +46,15 @@ func (sc *stringConstraint) validate(val reflect.Value) error {
 			}
 		}
 		if !in {
-			return fmt.Errorf("%s must be in [%s]", sc.field, strings.TrimSuffix(strings.Join(sc.in, ", "), ", "))
+			vs = append(vs, fmt.Sprintf("%s must be in [%s]", sc.field, strings.TrimSuffix(strings.Join(sc.in, ", "), ", ")))
 		}
 	}
-	if sc.regex != nil && !sc.regex.MatchString(s) {
-		return fmt.Errorf("%s must match regex /%s/", sc.field, sc.regex.String())
-	}
-	return nil
+	return vs
 }
 
-func makeStringConstraint(name string, field reflect.StructField) error {
+func makeStringConstraint(name string, field reflect.StructField) {
 	sc := new(stringConstraint)
-	sc.field = field.Name
+	sc.field = strings.ToLower(field.Name)
 	req, ok := field.Tag.Lookup("req")
 	if ok {
 		sc.req = req == "true"
@@ -62,7 +63,7 @@ func makeStringConstraint(name string, field reflect.StructField) error {
 	if ok {
 		max, err := strconv.Atoi(maxStr)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		sc.max = max
 	}
@@ -70,7 +71,7 @@ func makeStringConstraint(name string, field reflect.StructField) error {
 	if ok {
 		min, err := strconv.Atoi(minStr)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		sc.min = min
 	}
@@ -83,10 +84,9 @@ func makeStringConstraint(name string, field reflect.StructField) error {
 	if ok {
 		re, err := regexp.Compile(regex)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		sc.regex = re
 	}
-	constraintStore.Add(name, sc)
-	return nil
+	modelStore.add(name, sc)
 }

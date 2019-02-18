@@ -15,19 +15,20 @@ type int64Constraint struct {
 	in    []int64
 }
 
-func (i64c *int64Constraint) validate(val reflect.Value) error {
+func (i64c *int64Constraint) validate(val reflect.Value) []string {
 	i64 := val.Interface().(int64)
+	var vs []string
 	if !i64c.req && i64 == 0 {
-		return nil
+		return vs
 	}
 	if i64c.req && i64 == 0 {
-		return fmt.Errorf("%s is required", i64c.field)
+		vs = append(vs, fmt.Sprintf("%s is required", i64c.field))
 	}
 	if i64c.max > 0 && i64 > i64c.max {
-		return fmt.Errorf("%s can not be greater than %d", i64c.field, i64c.max)
+		vs = append(vs, fmt.Sprintf("%s can not be greater than %d", i64c.field, i64c.max))
 	}
 	if i64c.min > 0 && i64 < i64c.min {
-		return fmt.Errorf("%s must be at least %d", i64c.field, i64c.min)
+		vs = append(vs, fmt.Sprintf("%s must be at least %d", i64c.field, i64c.min))
 	}
 	if len(i64c.in) > 0 {
 		in := false
@@ -42,15 +43,15 @@ func (i64c *int64Constraint) validate(val reflect.Value) error {
 			for _, a := range i64c.in {
 				iStrSlice = append(iStrSlice, strconv.FormatInt(a, 10))
 			}
-			return fmt.Errorf("%s must be in [%s]", i64c.field, strings.TrimSuffix(strings.Join(iStrSlice, ", "), ", "))
+			vs = append(vs, fmt.Sprintf("%s must be in [%s]", i64c.field, strings.TrimSuffix(strings.Join(iStrSlice, ", "), ", ")))
 		}
 	}
-	return nil
+	return vs
 }
 
-func makeInt64Constraint(name string, field reflect.StructField) error {
+func makeInt64Constraint(name string, field reflect.StructField) {
 	i64c := new(int64Constraint)
-	i64c.field = field.Name
+	i64c.field = strings.ToLower(field.Name)
 	req, ok := field.Tag.Lookup("req")
 	if ok {
 		i64c.req = req == "true"
@@ -59,7 +60,7 @@ func makeInt64Constraint(name string, field reflect.StructField) error {
 	if ok {
 		max, err := strconv.ParseInt(maxStr, 10, 64)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		i64c.max = max
 	}
@@ -67,7 +68,7 @@ func makeInt64Constraint(name string, field reflect.StructField) error {
 	if ok {
 		min, err := strconv.ParseInt(minStr, 10, 64)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		i64c.min = min
 	}
@@ -78,12 +79,11 @@ func makeInt64Constraint(name string, field reflect.StructField) error {
 		for _, iStr := range inStrSlice {
 			i64, err := strconv.ParseInt(iStr, 10, 64)
 			if err != nil {
-				return err
+				panic(err)
 			}
 			inInt64Slice = append(inInt64Slice, i64)
 		}
 		i64c.in = inInt64Slice
 	}
-	constraintStore.Add(name, i64c)
-	return nil
+	modelStore.add(name, i64c)
 }

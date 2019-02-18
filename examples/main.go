@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"strings"
 
 	"github.com/twharmon/govalid"
 )
@@ -25,27 +25,43 @@ type Post struct {
 }
 
 func main() {
-	// Register the structs at load time that you will be validating later.
-	if registerErr := govalid.Register(&User{}, &Post{}); registerErr != nil {
-		log.Fatalln(registerErr)
-	}
+	// Register the structs at load time that you will be validating later
+	govalid.Register(User{}, Post{})
+
+	// Add a custom validator
+	govalid.AddCustom(User{}, func(obj interface{}) []string {
+		user := obj.(*User)
+		var violations []string
+		if !strings.HasPrefix(user.Email, "admin") && user.Role == "admin" {
+			violations = append(violations, "admin's email must start with 'admin'")
+		}
+		return violations
+	})
 
 	user := &User{
 		ID:             5,
 		Name:           "Gopher",
-		Email:          "gopher@example.com",
-		Age:            45,
-		Role:           "user",
+		Email:          "asdf@gmail.com",
+		Age:            2,
+		Role:           "admin",
 		FavoriteNumber: 918273645,
 	}
-	userErr := govalid.Validate(user)
-	fmt.Println(userErr) // <nil>
+	userViolations, err := govalid.Validate(user)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(userViolations) // ["age must be at least 3", "admin's email must start with 'admin'"]
 
 	post := &Post{
 		ID:    1,
 		Title: "Hello, World!",
 		Body:  "Hello!",
 	}
-	postErr := govalid.Validate(post)
-	fmt.Println(postErr) // Body must be at least 100 characters
+	postViolations, err := govalid.Validate(post)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(postViolations) // ["body must be at least 100 characters"]
 }

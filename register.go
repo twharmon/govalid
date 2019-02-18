@@ -1,6 +1,8 @@
 package govalid
 
-import "reflect"
+import (
+	"reflect"
+)
 
 // Register is required for all structs that you wish
 // to validate. It is intended to be ran at load time
@@ -9,37 +11,34 @@ import "reflect"
 //
 // NOTE: This is not thread safe. You must
 // register structs before validating.
-func Register(structs ...interface{}) error {
-	constraintStore = make(constraintMap)
+func Register(structs ...interface{}) {
+	modelStore = make(modelMap)
 	for _, s := range structs {
-		if err := register(s); err != nil {
-			return err
-		}
+		register(s)
 	}
-	return nil
 }
 
-func register(s interface{}) error {
-	typ := reflect.TypeOf(s).Elem()
+func register(s interface{}) {
+	typ := reflect.TypeOf(s)
+	if typ.Kind() == reflect.Ptr {
+		panic("pointers can not be registered")
+	}
+	if typ.Kind() != reflect.Struct {
+		panic("only structs can be registered")
+	}
 	name := typ.Name()
+	modelStore[name] = new(model)
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
 		switch field.Type.Kind() {
 		case reflect.String:
-			if err := makeStringConstraint(name, field); err != nil {
-				return err
-			}
+			makeStringConstraint(name, field)
 		case reflect.Int:
-			if err := makeIntConstraint(name, field); err != nil {
-				return err
-			}
+			makeIntConstraint(name, field)
 		case reflect.Int64:
-			if err := makeInt64Constraint(name, field); err != nil {
-				return err
-			}
+			makeInt64Constraint(name, field)
 		default:
 			makeNilConstraint(name)
 		}
 	}
-	return nil
 }
