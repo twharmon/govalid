@@ -10,13 +10,14 @@ import (
 
 type user struct {
 	ID             int64
-	Name           string  `govalid:"req,min:5,max:15,regex:^[a-zA-Z]+$"`
-	Email          string  `govalid:"req,min:3,max:25,regex:.+@.+"`
-	Age            int     `govalid:"min:3,max:120"`
-	Role           string  `govalid:"in:admin,user,editor"`
-	FavoriteNumber int64   `govalid:"req,min:1,max:999999999999999"`
-	Score          float32 `govalid:"req,min:3.33,max:10.45"`
-	PreciseScore   float64 `govalid:"req,min:1.5,max:6.22"`
+	Name           string   `validate:"req|min:5|max:15|regex:^[a-zA-Z]+$"`
+	Email          string   `validate:"req|min:3|max:25|regex:.+@.+"`
+	Age            int      `validate:"min:3|max:120"`
+	Role           string   `validate:"in:admin,user,editor"`
+	FavoriteNumber int64    `validate:"req|min:1|max:999999999999999"`
+	Score          float32  `validate:"req|min:3.33|max:10.45"`
+	PreciseScore   float64  `validate:"req|min:1.5|max:6.22"`
+	Tags           []string `validate:"req|min:1|max:5"`
 }
 
 type user2 struct {
@@ -34,13 +35,13 @@ var validate *validator.Validate
 
 func init() {
 	Register(user{})
-	AddCustom(user{}, func(obj interface{}) []string {
+	AddCustom(user{}, func(obj interface{}) ([]string, error) {
 		user := obj.(*user)
 		var violations []string
 		if !strings.HasPrefix(user.Email, "admin@") && user.Role == "admin" {
 			violations = append(violations, "admin's email must start with 'admin@'")
 		}
-		return violations
+		return violations, nil
 	})
 	validate = validator.New()
 	validate.RegisterValidation("alpha", func(fl validator.FieldLevel) bool {
@@ -67,13 +68,14 @@ func init() {
 func BenchmarkGovalid(b *testing.B) {
 	user := &user{
 		ID:             5,
-		Name:           "Gopher",
+		Name:           "Goph er",
 		Email:          "admin@gmail.com",
 		Age:            2,
 		Role:           "admin",
 		FavoriteNumber: 918273645,
 		Score:          5.325,
 		PreciseScore:   5.325,
+		Tags:           []string{"a", "b"},
 	}
 	for n := 0; n < b.N; n++ {
 		Validate(user)

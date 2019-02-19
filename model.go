@@ -7,9 +7,11 @@ import (
 	"strings"
 )
 
+const tagKey = "validate"
+
 type model struct {
 	constraints []constraint
-	custom      []func(interface{}) []string
+	custom      []func(interface{}) ([]string, error)
 }
 
 var modelStore map[string]*model
@@ -22,22 +24,26 @@ func (m *model) addToRegistry(name string) {
 	modelStore[name] = m
 }
 
-func (m *model) validate(s interface{}) []string {
+func (m *model) validate(s interface{}) ([]string, error) {
 	val := reflect.ValueOf(s).Elem()
 	var vs []string
 	for i, c := range m.constraints {
 		vs = append(vs, c.validate(val.Field(i))...)
 	}
 	for _, v := range m.custom {
-		vs = append(vs, v(s)...)
+		newVs, err := v(s)
+		if err != nil {
+			return nil, err
+		}
+		vs = append(vs, newVs...)
 	}
-	return vs
+	return vs, nil
 }
 
 func (m *model) registerStringConstraint(field reflect.StructField) {
 	c := new(stringConstraint)
 	c.field = strings.ToLower(field.Name)
-	tag, ok := field.Tag.Lookup("govalid")
+	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
 		return
@@ -60,7 +66,7 @@ func (m *model) registerStringConstraint(field reflect.StructField) {
 func (m *model) registerIntConstraint(field reflect.StructField) {
 	c := new(intConstraint)
 	c.field = strings.ToLower(field.Name)
-	tag, ok := field.Tag.Lookup("govalid")
+	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
 		return
@@ -84,7 +90,7 @@ func (m *model) registerIntConstraint(field reflect.StructField) {
 func (m *model) registerInt64Constraint(field reflect.StructField) {
 	c := new(int64Constraint)
 	c.field = strings.ToLower(field.Name)
-	tag, ok := field.Tag.Lookup("govalid")
+	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
 		return
@@ -108,7 +114,7 @@ func (m *model) registerInt64Constraint(field reflect.StructField) {
 func (m *model) registerFloat64Constraint(field reflect.StructField) {
 	c := new(float64Constraint)
 	c.field = strings.ToLower(field.Name)
-	tag, ok := field.Tag.Lookup("govalid")
+	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
 		return
@@ -122,7 +128,7 @@ func (m *model) registerFloat64Constraint(field reflect.StructField) {
 func (m *model) registerFloat32Constraint(field reflect.StructField) {
 	c := new(float32Constraint)
 	c.field = strings.ToLower(field.Name)
-	tag, ok := field.Tag.Lookup("govalid")
+	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
 		return

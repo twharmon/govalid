@@ -14,14 +14,13 @@ type float32Constraint struct {
 
 func (f32c *float32Constraint) validate(val reflect.Value) []string {
 	f32 := val.Interface().(float32)
-	var vs []string
 	if !f32c.req && f32 == 0 {
-		return vs
+		return nil
 	}
 	if f32c.req && f32 == 0 {
-		vs = append(vs, fmt.Sprintf("%s is required", f32c.field))
-		return vs
+		return []string{fmt.Sprintf("%s is required", f32c.field)}
 	}
+	var vs []string
 	if f32c.max > 0 && f32 > f32c.max {
 		vs = append(vs, fmt.Sprintf("%s can not be greater than %f", f32c.field, f32c.max))
 	}

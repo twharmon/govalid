@@ -17,14 +17,13 @@ type int64Constraint struct {
 
 func (i64c *int64Constraint) validate(val reflect.Value) []string {
 	i64 := val.Interface().(int64)
-	var vs []string
 	if !i64c.req && i64 == 0 {
-		return vs
+		return nil
 	}
 	if i64c.req && i64 == 0 {
-		vs = append(vs, fmt.Sprintf("%s is required", i64c.field))
-		return vs
+		return []string{fmt.Sprintf("%s is required", i64c.field)}
 	}
+	var vs []string
 	if i64c.max > 0 && i64 > i64c.max {
 		vs = append(vs, fmt.Sprintf("%s can not be greater than %d", i64c.field, i64c.max))
 	}
@@ -44,7 +43,7 @@ func (i64c *int64Constraint) validate(val reflect.Value) []string {
 			for _, a := range i64c.in {
 				iStrSlice = append(iStrSlice, strconv.FormatInt(a, 10))
 			}
-			vs = append(vs, fmt.Sprintf("%s must be in [%s]", i64c.field, strings.TrimSuffix(strings.Join(iStrSlice, ", "), ", ")))
+			vs = append(vs, fmt.Sprintf("%s must be in [%s]", i64c.field, strings.Join(iStrSlice, ", ")))
 		}
 	}
 	return vs

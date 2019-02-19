@@ -7,7 +7,9 @@ import (
 )
 
 // Validate checks the struct s against all constraints and custom
-// validation functions, if any.
+// validation functions, if any. It returns violations as []string.
+// An error is returned if the struct wasn't registered or if s
+// is not a pointer to a struct.
 func Validate(s interface{}) ([]string, error) {
 	t := reflect.TypeOf(s)
 	if t.Kind() != reflect.Ptr {
@@ -21,5 +23,5 @@ func Validate(s interface{}) ([]string, error) {
 	if m == nil {
 		return nil, fmt.Errorf("%s was not registered", e.Name())
 	}
-	return m.validate(s), nil
+	return m.validate(s)
 }

@@ -6,45 +6,34 @@ Govalid uses that information at run time to reduce allocations and computing.
 ## Usage
 Govalid currently supports the following constraints.
 
-`int`
-- req:"[bool]" - `govalid:"req"`
-- min:"[int]" - `govalid:"min:5"`
-- max:"[int]" - `govalid:"max:50"`
-- in:"[int],[int],..." - `govalid:"in:3,4,5"`
+`int` & `int64`
+- req
+- min
+- max
+- in
 
-`int64`
-- req:"[bool]" - `govalid:"req"`
-- min:"[int64]" - `govalid:"min:5"`
-- max:"[int64]" - `govalid:"max:50"`
-- in:"[int64],[int64],..." - `govalid:"in:3,4,5"`
-
-`float32`
-- req:"[bool]" - `govalid:"req"`
-- min:"[float32]" - `govalid:"min:5.0"`
-- max:"[float32]" - `govalid:"max:50.0"`
-
-`float64`
-- req:"[bool]" - `govalid:"req"`
-- min:"[float64]" - `govalid:"min:5.0"`
-- max:"[float64]" - `govalid:"max:50.0"`
+`float32` & `float64`
+- req
+- min
+- max
 
 `string`
-- req:"[bool]" - `govalid:"req"`
-- min:"[int]" - `govalid:"min:5"`
-- max:"[int]" - `govalid:"max:50"`
-- in:"[string],[string],..." - `govalid:"in:user,editor,admin"`
-- regex:"[string]" - `govalid:"regex:^[a-zA-Z0-9]+$"`
+- req
+- min
+- max
+- in
+- regex
 
 ## Examples
 Here is an example struct with some basic constraints.
 ```
 type User struct {
     ID             int64
-    Name           string  `govalid:"req,min:5,max:25,regex:^[a-zA-Z ]+$"`
-    Email          string  `govalid:"req,min:3,max:100,regex:.+?@.+?"`
-    Age            int     `govalid:"min:18,max:120"`
-    Role           string  `govalid:"in:admin,editor,user"`
-    Grade          float32 `govalid:"min:0.0,max:100.0"`
+    Name           string  `validate:"req|min:5|max:25,regex:^[a-zA-Z ]+$"`
+    Email          string  `validate:"req|min:3|max:100|regex:^.+?@.+?$"`
+    Age            int     `validate:"min:18|max:120"`
+    Role           string  `validate:"req|in:admin,editor,user"`
+    Grade          float32 `validate:"min:0.0|max:100.0"`
 }
 ```
 

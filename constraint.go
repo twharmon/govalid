@@ -8,8 +8,11 @@ type constraint interface {
 	validate(reflect.Value) []string
 }
 
-// AddCustom adds custom validation functions to struct s
-func AddCustom(s interface{}, f func(interface{}) []string) {
+// AddCustom adds custom validation functions to struct s.
+//
+// NOTE: This is not thread safe. You must
+// add cusrom validation functions before validating.
+func AddCustom(s interface{}, f func(interface{}) ([]string, error)) {
 	t := reflect.TypeOf(s)
 	if t.Kind() == reflect.Ptr {
 		panic("pointers can not be registered")

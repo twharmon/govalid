@@ -17,14 +17,13 @@ type intConstraint struct {
 
 func (ic *intConstraint) validate(val reflect.Value) []string {
 	i := val.Interface().(int)
-	var vs []string
 	if !ic.req && i == 0 {
-		return vs
+		return nil
 	}
 	if ic.req && i == 0 {
-		vs = append(vs, fmt.Sprintf("%s is required", ic.field))
-		return vs
+		return []string{fmt.Sprintf("%s is required", ic.field)}
 	}
+	var vs []string
 	if ic.max > 0 && i > ic.max {
 		vs = append(vs, fmt.Sprintf("%s can not be greater than %d", ic.field, ic.max))
 	}
@@ -44,7 +43,7 @@ func (ic *intConstraint) validate(val reflect.Value) []string {
 			for _, a := range ic.in {
 				iStrSlice = append(iStrSlice, strconv.Itoa(a))
 			}
-			vs = append(vs, fmt.Sprintf("%s must be in [%s]", ic.field, strings.TrimSuffix(strings.Join(iStrSlice, ", "), ", ")))
+			vs = append(vs, fmt.Sprintf("%s must be in [%s]", ic.field, strings.Join(iStrSlice, ", ")))
 		}
 	}
 	return vs

@@ -6,7 +6,7 @@ import (
 
 // Register is required for all structs that you wish
 // to validate. It is intended to be ran at load time
-// and cashes information about the structs to reduce
+// and caches information about the structs to reduce
 // run time allocations.
 //
 // NOTE: This is not thread safe. You must

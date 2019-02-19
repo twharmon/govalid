@@ -6,7 +6,7 @@ import (
 )
 
 func getBoolFromTag(tag string, key string) bool {
-	cs := strings.Split(tag, ",")
+	cs := strings.Split(tag, "|")
 	for _, c := range cs {
 		if c == key {
 			return true
@@ -16,7 +16,7 @@ func getBoolFromTag(tag string, key string) bool {
 }
 
 func getIntFromTag(tag string, key string) int {
-	cs := strings.Split(tag, ",")
+	cs := strings.Split(tag, "|")
 	for _, c := range cs {
 		parts := strings.Split(c, ":")
 		if len(parts) != 2 {
@@ -34,7 +34,7 @@ func getIntFromTag(tag string, key string) int {
 }
 
 func getInt64FromTag(tag string, key string) int64 {
-	cs := strings.Split(tag, ",")
+	cs := strings.Split(tag, "|")
 	for _, c := range cs {
 		parts := strings.Split(c, ":")
 		if len(parts) != 2 {
@@ -52,7 +52,7 @@ func getInt64FromTag(tag string, key string) int64 {
 }
 
 func getFloat32FromTag(tag string, key string) float32 {
-	cs := strings.Split(tag, ",")
+	cs := strings.Split(tag, "|")
 	for _, c := range cs {
 		parts := strings.Split(c, ":")
 		if len(parts) != 2 {
@@ -70,7 +70,7 @@ func getFloat32FromTag(tag string, key string) float32 {
 }
 
 func getFloat64FromTag(tag string, key string) float64 {
-	cs := strings.Split(tag, ",")
+	cs := strings.Split(tag, "|")
 	for _, c := range cs {
 		parts := strings.Split(c, ":")
 		if len(parts) != 2 {
@@ -88,7 +88,7 @@ func getFloat64FromTag(tag string, key string) float64 {
 }
 
 func getStringFromTag(tag string, key string) string {
-	cs := strings.Split(tag, ",")
+	cs := strings.Split(tag, "|")
 	for _, c := range cs {
 		parts := strings.Split(c, ":")
 		if len(parts) != 2 {

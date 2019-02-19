@@ -19,14 +19,13 @@ type stringConstraint struct {
 
 func (sc *stringConstraint) validate(val reflect.Value) []string {
 	s := val.Interface().(string)
-	var vs []string
 	if !sc.req && s == "" {
-		return vs
+		return nil
 	}
 	if sc.req && s == "" {
-		vs = append(vs, fmt.Sprintf("%s is required", sc.field))
-		return vs
+		return []string{fmt.Sprintf("%s is required", sc.field)}
 	}
+	var vs []string
 	strLen := utf8.RuneCountInString(s)
 	if sc.max > 0 && strLen > sc.max {
 		vs = append(vs, fmt.Sprintf("%s can not be longer than %d characters", sc.field, sc.max))
@@ -46,7 +45,7 @@ func (sc *stringConstraint) validate(val reflect.Value) []string {
 			}
 		}
 		if !in {
-			vs = append(vs, fmt.Sprintf("%s must be in [%s]", sc.field, strings.TrimSuffix(strings.Join(sc.in, ", "), ", ")))
+			vs = append(vs, fmt.Sprintf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", ")))
 		}
 	}
 	return vs
