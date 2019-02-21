@@ -27,6 +27,7 @@ func register(s interface{}) {
 	}
 	name := typ.Name()
 	m := new(model)
+	m.name = name
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
 		switch field.Type.Kind() {
