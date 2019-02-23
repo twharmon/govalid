@@ -11,7 +11,7 @@ import (
 const tagKey = "validate"
 
 type model struct {
-	name        string // todo: .
+	name        string
 	constraints []constraint
 	custom      []func(interface{}) (string, error)
 }

@@ -30,20 +30,17 @@ func (i64c *int64Constraint) validate(val reflect.Value) string {
 		return fmt.Sprintf("%s must be at least %d", i64c.field, i64c.min)
 	}
 	if len(i64c.in) > 0 {
-		in := false
 		for _, opt := range i64c.in {
 			if i64 == opt {
-				in = true
-				break
+				return ""
 			}
 		}
-		if !in {
-			iStrSlice := []string{}
-			for _, a := range i64c.in {
-				iStrSlice = append(iStrSlice, strconv.FormatInt(a, 10))
-			}
-			return fmt.Sprintf("%s must be in [%s]", i64c.field, strings.Join(iStrSlice, ", "))
-		}
+	} else {
+		return ""
 	}
-	return ""
+	iStrSlice := []string{}
+	for _, a := range i64c.in {
+		iStrSlice = append(iStrSlice, strconv.FormatInt(a, 10))
+	}
+	return fmt.Sprintf("%s must be in [%s]", i64c.field, strings.Join(iStrSlice, ", "))
 }

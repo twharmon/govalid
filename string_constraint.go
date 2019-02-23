@@ -36,16 +36,13 @@ func (sc *stringConstraint) validate(val reflect.Value) string {
 		return fmt.Sprintf("%s must match regex /%s/", sc.field, sc.regex.String())
 	}
 	if len(sc.in) > 0 {
-		in := false
 		for _, opt := range sc.in {
 			if s == opt {
-				in = true
-				break
+				return ""
 			}
 		}
-		if !in {
-			return fmt.Sprintf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", "))
-		}
+	} else {
+		return ""
 	}
-	return ""
+	return fmt.Sprintf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", "))
 }

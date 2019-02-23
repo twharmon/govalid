@@ -30,20 +30,17 @@ func (ic *intConstraint) validate(val reflect.Value) string {
 		return fmt.Sprintf("%s must be at least %d", ic.field, ic.min)
 	}
 	if len(ic.in) > 0 {
-		in := false
 		for _, opt := range ic.in {
 			if i == opt {
-				in = true
-				break
+				return ""
 			}
 		}
-		if !in {
-			iStrSlice := []string{}
-			for _, a := range ic.in {
-				iStrSlice = append(iStrSlice, strconv.Itoa(a))
-			}
-			return fmt.Sprintf("%s must be in [%s]", ic.field, strings.Join(iStrSlice, ", "))
-		}
+	} else {
+		return ""
 	}
-	return ""
+	iStrSlice := []string{}
+	for _, a := range ic.in {
+		iStrSlice = append(iStrSlice, strconv.Itoa(a))
+	}
+	return fmt.Sprintf("%s must be in [%s]", ic.field, strings.Join(iStrSlice, ", "))
 }

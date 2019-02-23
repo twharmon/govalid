@@ -9,8 +9,8 @@ import (
 
 type user struct {
 	ID             int64
-	Name           string  `validate:"req|min:5|max:15"`
-	Email          string  `validate:"req|min:3|max:25|regex:.+@.+"`
+	Name           string  `validate:"req|min:5|max:15|regex:^[a-zA-Z]+$"`
+	Email          string  `validate:"req|min:3|max:25|regex:^.+@.+$"`
 	Age            int     `validate:"min:3|max:120"`
 	Role           string  `validate:"in:admin,user,editor"`
 	FavoriteNumber int64   `validate:"req|min:1|max:999999999999999"`
@@ -19,9 +19,9 @@ type user struct {
 
 type user2 struct {
 	ID             int64
-	Name           string  `validate:"required,gte=5,lte=15"`
-	Email          string  `validate:"required,gte=3,lte=25,alpha"`
-	Age            int     `validate:"gte=3,lte=120,custom-email"`
+	Name           string  `validate:"required,gte=5,lte=15,alpha"`
+	Email          string  `validate:"required,gte=3,lte=25,custom-email"`
+	Age            int     `validate:"gte=3,lte=120"`
 	Role           string  `validate:"role"`
 	FavoriteNumber int64   `validate:"required,gte=1,lte=999999999999999"`
 	Score          float64 `validate:"required,gte=3.33,lte=10.45"`
@@ -32,23 +32,23 @@ var validate *validator.Validate
 func init() {
 	Register(user{})
 	validate = validator.New()
+	reAl, err := regexp.Compile("^[a-zA-Z]+$")
+	if err != nil {
+		panic(err)
+	}
 	validate.RegisterValidation("alpha", func(fl validator.FieldLevel) bool {
-		re, err := regexp.Compile("^[a-zA-Z]+$")
-		if err != nil {
-			panic(err)
-		}
-		return re.MatchString(fl.Field().String())
+		return reAl.MatchString(fl.Field().String())
 	})
 	validate.RegisterValidation("role", func(fl validator.FieldLevel) bool {
 		s := fl.Field().String()
 		return s == "admin" || s == "user" || s == "editor"
 	})
-	re, err := regexp.Compile("^.+@.+$")
+	reEm, err := regexp.Compile("^.+@.+$")
 	if err != nil {
 		panic(err)
 	}
 	validate.RegisterValidation("custom-email", func(fl validator.FieldLevel) bool {
-		return re.MatchString(fl.Field().String())
+		return reEm.MatchString(fl.Field().String())
 	})
 }
 
@@ -58,7 +58,7 @@ func BenchmarkGovalid(b *testing.B) {
 		ID:             5,
 		Name:           "Gopher",
 		Email:          "admin@gmail.com",
-		Age:            2,
+		Age:            20,
 		Role:           "admin",
 		FavoriteNumber: 918273645,
 		Score:          5.325,
@@ -74,7 +74,7 @@ func BenchmarkValidatorV9(b *testing.B) {
 		ID:             5,
 		Name:           "Gopher",
 		Email:          "admin@gmail.com",
-		Age:            2,
+		Age:            20,
 		Role:           "admin",
 		FavoriteNumber: 918273645,
 		Score:          5.325,

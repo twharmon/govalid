@@ -23,7 +23,7 @@ type User struct {
 type Post struct {
 	ID    int64
 	Title string `validate:"req|min:1|max:30"`
-	Body  string `validate:"req|min:100|max:65535"`
+	Body  string `validate:"req|min:10|max:65535"`
 }
 
 func main() {
@@ -42,8 +42,8 @@ func main() {
 	user := &User{
 		ID:             5,
 		Name:           "Gopher",
-		Email:          "user@gmail.com",
-		Age:            2,
+		Email:          "admin@gmail.com",
+		Age:            1,
 		Role:           "admin",
 		FavoriteNumber: 918273645,
 		Score:          4.325,
@@ -54,7 +54,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(userViolations) // ["age must be at least 3", "admin's email must start with 'admin'"]
+	fmt.Println(userViolations) // "age must be at least 3"
 
 	post := &Post{
 		ID:    1,
@@ -66,5 +66,5 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(postViolations) // ["body must be at least 100 characters"]
+	fmt.Println(postViolations) // "body must be at least 100 characters"
 }
