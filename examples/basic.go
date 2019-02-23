@@ -49,22 +49,30 @@ func main() {
 		Score:          4.325,
 		PreciseScore:   3.325,
 	}
-	userViolations, err := govalid.Validate(user)
+	userViolation, err := govalid.Validate(user)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(userViolations) // "age must be at least 3"
+	if userViolation == "" {
+		fmt.Println("user is valid")
+	} else {
+		fmt.Println(userViolation) // "age must be at least 3"
+	}
 
 	post := &Post{
 		ID:    1,
 		Title: "Hello, World!",
 		Body:  "Hello!",
 	}
-	postViolations, err := govalid.Validate(post)
+	postViolation, err := govalid.Validate(post)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(postViolations) // "body must be at least 100 characters"
+	if postViolation == "" {
+		fmt.Println("post is valid")
+	} else {
+		fmt.Println(postViolation) // "body must be at least 10 characters"
+	}
 }
