@@ -13,7 +13,7 @@ const tagKey = "validate"
 type model struct {
 	name        string // todo: .
 	constraints []constraint
-	custom      []func(interface{}) ([]string, error)
+	custom      []func(interface{}) (string, error)
 }
 
 var modelStore map[string]*model
@@ -26,20 +26,24 @@ func (m *model) addToRegistry(name string) {
 	modelStore[name] = m
 }
 
-func (m *model) validate(s interface{}) ([]string, error) {
+func (m *model) validate(s interface{}) (string, error) {
 	val := reflect.ValueOf(s).Elem()
-	var vs []string
 	for i, c := range m.constraints {
-		vs = append(vs, c.validate(val.Field(i))...)
+		v := c.validate(val.Field(i))
+		if v != "" {
+			return v, nil
+		}
 	}
 	for _, v := range m.custom {
-		newVs, err := v(s)
+		v, err := v(s)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
-		vs = append(vs, newVs...)
+		if v != "" {
+			return v, nil
+		}
 	}
-	return vs, nil
+	return "", nil
 }
 
 func (m *model) registerStringConstraint(field reflect.StructField) {

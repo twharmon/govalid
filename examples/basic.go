@@ -31,13 +31,12 @@ func main() {
 	govalid.Register(User{}, Post{})
 
 	// Add a custom validator
-	govalid.AddCustom(User{}, func(obj interface{}) ([]string, error) {
+	govalid.AddCustom(User{}, func(obj interface{}) (string, error) {
 		user := obj.(*User)
-		var violations []string
 		if !strings.HasPrefix(user.Email, "admin@") && user.Role == "admin" {
-			violations = append(violations, "admin's email must start with 'admin@'")
+			return "admin's email must start with 'admin@'", nil
 		}
-		return violations, nil
+		return "", nil
 	})
 
 	user := &User{

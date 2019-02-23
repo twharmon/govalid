@@ -12,20 +12,19 @@ type float32Constraint struct {
 	max   float32
 }
 
-func (f32c *float32Constraint) validate(val reflect.Value) []string {
+func (f32c *float32Constraint) validate(val reflect.Value) string {
 	f32 := val.Interface().(float32)
 	if !f32c.req && f32 == 0 {
-		return nil
+		return ""
 	}
 	if f32c.req && f32 == 0 {
-		return []string{fmt.Sprintf("%s is required", f32c.field)}
+		return fmt.Sprintf("%s is required", f32c.field)
 	}
-	var vs []string
 	if f32c.max > 0 && f32 > f32c.max {
-		vs = append(vs, fmt.Sprintf("%s can not be greater than %f", f32c.field, f32c.max))
+		return fmt.Sprintf("%s can not be greater than %f", f32c.field, f32c.max)
 	}
 	if f32c.min > 0 && f32 < f32c.min {
-		vs = append(vs, fmt.Sprintf("%s must be at least %f", f32c.field, f32c.min))
+		return fmt.Sprintf("%s must be at least %f", f32c.field, f32c.min)
 	}
-	return vs
+	return ""
 }

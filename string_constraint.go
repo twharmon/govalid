@@ -17,24 +17,23 @@ type stringConstraint struct {
 	regex *regexp.Regexp
 }
 
-func (sc *stringConstraint) validate(val reflect.Value) []string {
+func (sc *stringConstraint) validate(val reflect.Value) string {
 	s := val.Interface().(string)
 	if !sc.req && s == "" {
-		return nil
+		return ""
 	}
 	if sc.req && s == "" {
-		return []string{fmt.Sprintf("%s is required", sc.field)}
+		return fmt.Sprintf("%s is required", sc.field)
 	}
-	var vs []string
 	strLen := utf8.RuneCountInString(s)
 	if sc.max > 0 && strLen > sc.max {
-		vs = append(vs, fmt.Sprintf("%s can not be longer than %d characters", sc.field, sc.max))
+		return fmt.Sprintf("%s can not be longer than %d characters", sc.field, sc.max)
 	}
 	if sc.min > 0 && strLen < sc.min {
-		vs = append(vs, fmt.Sprintf("%s must be at least %d characters", sc.field, sc.min))
+		return fmt.Sprintf("%s must be at least %d characters", sc.field, sc.min)
 	}
 	if sc.regex != nil && !sc.regex.MatchString(s) {
-		vs = append(vs, fmt.Sprintf("%s must match regex /%s/", sc.field, sc.regex.String()))
+		return fmt.Sprintf("%s must match regex /%s/", sc.field, sc.regex.String())
 	}
 	if len(sc.in) > 0 {
 		in := false
@@ -45,8 +44,8 @@ func (sc *stringConstraint) validate(val reflect.Value) []string {
 			}
 		}
 		if !in {
-			vs = append(vs, fmt.Sprintf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", ")))
+			return fmt.Sprintf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", "))
 		}
 	}
-	return vs
+	return ""
 }

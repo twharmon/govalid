@@ -43,11 +43,11 @@ func init() {
 		s := fl.Field().String()
 		return s == "admin" || s == "user" || s == "editor"
 	})
+	re, err := regexp.Compile("^.+@.+$")
+	if err != nil {
+		panic(err)
+	}
 	validate.RegisterValidation("custom-email", func(fl validator.FieldLevel) bool {
-		re, err := regexp.Compile("^.+@.+$")
-		if err != nil {
-			panic(err)
-		}
 		return re.MatchString(fl.Field().String())
 	})
 }
