@@ -1,7 +1,5 @@
 # Govalid
-Use Govalid to validate structs.
-At load time, Govalid caches information about the structs you pass to `govalid.Register`.
-Govalid uses that information at run time to reduce allocations and computing.
+Use Govalid to validate structs. Govalid will stop validation when it reaches the first violation.
 
 ## Usage
 Govalid currently supports the following constraints.
@@ -41,13 +39,12 @@ Register the struct and add a custom constraint.
 Both Register and AddCustom can panic, so they should be called at load time.
 ```
 govalid.Register(User{})
-govalid.AddCustom(User{}, func(obj interface{}) []string {
+govalid.AddCustom(User{}, func(obj interface{}) (string, error) {
     user := obj.(*User)
-    var violations []string
     if !strings.HasPrefix(user.Email, "admin@") && user.Role == "admin" {
-        violations = append(violations, "admin's email must start with 'admin@'")
+        return "admin's email must start with 'admin@'", nil
     }
-    return violations
+    return "", nil
 })
 ```
 
@@ -61,15 +58,16 @@ user := &User{
     Role:  "admin",
     Grade: 87.5,
 }
-userViolations, err := govalid.Validate(user)
+userViolation, err := govalid.Validate(user)
 if err != nil {
     // two errors are possible
     // 1) you did not register User yet (govalid.Register(User{}))
     // 2) you did not pass a pointer to User
+    // 3) your custom validation functions, if any, return a non-nil error
     fmt.Println(err)
     return
 }
-fmt.Println(userViolations) // ["age must be at least 18", "admin's email must start with 'admin'"]
+fmt.Println(userViolation) // "age must be at least 18"
 ```
 
 See [examples](https://github.com/twharmon/govalid/tree/master/examples) for more.
