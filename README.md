@@ -70,7 +70,5 @@ if err != nil {
 fmt.Println(userViolation) // "age must be at least 18"
 ```
 
-See [examples](https://github.com/twharmon/govalid/tree/master/examples) for more.
-
 ## Contribute
 Create a pull request to contribute to Govalid.
