@@ -1,9 +1,10 @@
-package govalid
+package bench
 
 import (
 	"regexp"
 	"testing"
 
+	"github.com/twharmon/govalid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
 
@@ -30,7 +31,7 @@ type user2 struct {
 var validate *validator.Validate
 
 func init() {
-	Register(user{})
+	govalid.Register(user{})
 	validate = validator.New()
 	reAl, err := regexp.Compile("^[a-zA-Z]+$")
 	if err != nil {
@@ -52,7 +53,6 @@ func init() {
 	})
 }
 
-// BenchmarkGovalid .
 func BenchmarkGovalid(b *testing.B) {
 	user := &user{
 		ID:             5,
@@ -64,14 +64,13 @@ func BenchmarkGovalid(b *testing.B) {
 		Score:          5.325,
 	}
 	for n := 0; n < b.N; n++ {
-		_, err := Validate(user)
+		_, err := govalid.Validate(user)
 		if err != nil {
 			panic(err)
 		}
 	}
 }
 
-// BenchmarkValidatorV9 .
 func BenchmarkValidatorV9(b *testing.B) {
 	user := &user2{
 		ID:             5,
