@@ -38,4 +38,10 @@ func TestConstraint(t *testing.T) {
 			return "", nil
 		})
 	})
+
+	assertPanic(t, "custom validation without registration", func() {
+		govalid.AddCustom(struct{ S string }{}, func(i interface{}) (string, error) {
+			return "", nil
+		})
+	})
 }
