@@ -1,168 +1,59 @@
 package govalid_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/twharmon/govalid"
 )
 
-type stringReqStruct struct {
-	Name string `validate:"req|min:5|max:10"`
-}
-
-type stringStruct struct {
-	Name string `validate:"min:5|max:10|regex:^[a-zA-Z0-9]+$"`
-}
-
-type stringInStruct struct {
-	Name string `validate:"in:abc,def,ghi"`
-}
-
 func init() {
-	govalid.Register(stringStruct{}, stringReqStruct{}, stringInStruct{})
+	govalid.Register(str{}, strReq{}, strMin{}, strReqMax{}, strRegex{}, strIn{})
 }
 
-func TestValidateStringReqMinInvalid(t *testing.T) {
-	s := &stringReqStruct{"asdf"}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if !strings.Contains(v, "at least") {
-		t.Errorf("violation was '%s'; should contain 'at least'", v)
-	}
+type str struct {
+	S string
 }
 
-func TestValidateStringReqMinInvalidOmit(t *testing.T) {
-	s := &stringReqStruct{}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if !strings.Contains(v, "required") {
-		t.Errorf("violation was '%s'; should contain 'required'", v)
-	}
+type strReq struct {
+	S string `validate:"req"`
 }
 
-func TestValidateStringReqMinValid(t *testing.T) {
-	s := &stringReqStruct{"12345"}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if v != "" {
-		t.Errorf("violation was '%s'; should be ''", v)
-	}
+type strMin struct {
+	S string `validate:"min:5"`
 }
 
-func TestValidateStringMinInvalid(t *testing.T) {
-	s := &stringStruct{"1234"}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if !strings.Contains(v, "at least") {
-		t.Errorf("violation was '%s'; should contain 'at least'", v)
-	}
+type strReqMax struct {
+	S string `validate:"req|max:5"`
 }
 
-func TestValidateStringMinValid(t *testing.T) {
-	s := &stringStruct{"12345"}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if v != "" {
-		t.Errorf("violation was '%s'; should be ''", v)
-	}
+type strRegex struct {
+	S string `validate:"regex:^[a-z]+$"`
 }
 
-func TestValidateStringMinValidOmit(t *testing.T) {
-	s := &stringStruct{}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if v != "" {
-		t.Errorf("violation was '%s'; should be ''", v)
-	}
+type strIn struct {
+	S string `validate:"in:abc,def,ghi"`
 }
 
-func TestValidateStringMaxInvalid(t *testing.T) {
-	s := &stringStruct{"12345678901"}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if !strings.Contains(v, "longer than") {
-		t.Errorf("violation was '%s'; should contiain 'longer than'", v)
-	}
-}
+func TestString(t *testing.T) {
+	assertValid(t, "no validation rules with empty field", &str{})
+	assertValid(t, "no validation rules with non-empty field", &str{"asdf"})
 
-func TestValidateStringReqMaxInvalid(t *testing.T) {
-	s := &stringReqStruct{"12345678901"}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if !strings.Contains(v, "longer than") {
-		t.Errorf("violation was '%s'; should contain 'longer than'", v)
-	}
-}
+	assertInvalid(t, "`req` with empty field", &strReq{})
+	assertValid(t, "`req` with non-empty field", &strReq{"asdf"})
 
-func TestValidateStringRegexInvalid(t *testing.T) {
-	s := &stringStruct{"1236 78901"}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if !strings.Contains(v, "regex") {
-		t.Errorf("violation was '%s'; should contain 'regex'", v)
-	}
-}
+	assertValid(t, "`min` with empty field", &strMin{})
+	assertInvalid(t, "`min` with field too short", &strMin{"asdf"})
+	assertValid(t, "`min` with valid field", &strMin{"asdfasdf"})
 
-func TestValidateStringRegexValid(t *testing.T) {
-	s := &stringStruct{"aV2asdf"}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if v != "" {
-		t.Errorf("violation was '%s'; should be ''", v)
-	}
-}
+	assertInvalid(t, "`req|max` with empty field", &strReqMax{})
+	assertInvalid(t, "`req|max` with field too long", &strReqMax{"asdfasdf"})
+	assertValid(t, "`req|max` with valid field", &strReqMax{"asdf"})
 
-func TestValidateStringInInvalid(t *testing.T) {
-	s := &stringInStruct{"asdf"}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if !strings.Contains(v, "must be in") {
-		t.Errorf("violation was '%s'; should contain 'must be in'", v)
-	}
-}
+	assertValid(t, "`regex` with empty field", &strRegex{})
+	assertInvalid(t, "`regex` with invalid field", &strRegex{"asdf0"})
+	assertValid(t, "`regex` with valid field", &strRegex{"asdf"})
 
-func TestValidateStringInValid(t *testing.T) {
-	s := &stringInStruct{"def"}
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error("error:", err)
-		return
-	}
-	if v != "" {
-		t.Errorf("violation was '%s'; should be ''", v)
-	}
+	assertValid(t, "`in` with empty field", &strIn{})
+	assertInvalid(t, "`in` with invalid field", &strIn{"abcd"})
+	assertValid(t, "`in` with valid field", &strIn{"def"})
 }

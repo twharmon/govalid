@@ -30,6 +30,7 @@ func register(s interface{}) {
 	m.name = name
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
+		// todo: assert is exported
 		switch field.Type.Kind() {
 		case reflect.String:
 			m.registerStringConstraint(field)

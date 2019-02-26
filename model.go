@@ -48,7 +48,7 @@ func (m *model) validate(s interface{}) (string, error) {
 
 func (m *model) registerStringConstraint(field reflect.StructField) {
 	c := new(stringConstraint)
-	c.field = strings.ToLower(field.Name)
+	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
@@ -72,7 +72,7 @@ func (m *model) registerStringConstraint(field reflect.StructField) {
 
 func (m *model) registerIntConstraint(field reflect.StructField) {
 	c := new(intConstraint)
-	c.field = strings.ToLower(field.Name)
+	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
@@ -96,7 +96,7 @@ func (m *model) registerIntConstraint(field reflect.StructField) {
 
 func (m *model) registerInt64Constraint(field reflect.StructField) {
 	c := new(int64Constraint)
-	c.field = strings.ToLower(field.Name)
+	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
@@ -120,7 +120,7 @@ func (m *model) registerInt64Constraint(field reflect.StructField) {
 
 func (m *model) registerFloat64Constraint(field reflect.StructField) {
 	c := new(float64Constraint)
-	c.field = strings.ToLower(field.Name)
+	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
@@ -134,7 +134,7 @@ func (m *model) registerFloat64Constraint(field reflect.StructField) {
 
 func (m *model) registerFloat32Constraint(field reflect.StructField) {
 	c := new(float32Constraint)
-	c.field = strings.ToLower(field.Name)
+	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
