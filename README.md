@@ -1,4 +1,4 @@
-# Govalid
+# Govalid [![Build Status](https://travis-ci.com/twharmon/govalid.svg?branch=master)](https://travis-ci.com/twharmon/govalid)
 Use Govalid to validate structs. Govalid will stop validation when it reaches the first violation.
 
 ## Usage
