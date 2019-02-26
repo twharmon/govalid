@@ -29,7 +29,7 @@ type User struct {
     ID             int64
     Name           string  `validate:"req|min:5|max:25,regex:^[a-zA-Z ]+$"`
     Email          string  `validate:"req|min:3|max:100|regex:^.+?@.+?$"`
-    Age            int     `validate:"min:18|max:120"`
+    Age            int     `validate:"min:18|max:100"`
     Role           string  `validate:"req|in:admin,editor,user"`
     Grade          float32 `validate:"min:0.0|max:100.0"`
 }
