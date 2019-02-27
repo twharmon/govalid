@@ -11,7 +11,18 @@ type registerTest struct {
 }
 
 func TestRegister(t *testing.T) {
-	assertPanic(t, "when register pointer", func() {
+	assertPanic(t, "when pointer", func() {
 		govalid.Register(&registerTest{})
+	})
+
+	assertPanic(t, "when already registered", func() {
+		govalid.Register(registerTest{})
+		govalid.Register(registerTest{})
+	})
+
+	assertPanic(t, "when map", func() {
+		type registerTestMap map[string]string
+		testMap := make(registerTestMap)
+		govalid.Register(testMap)
 	})
 }
