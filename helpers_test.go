@@ -34,3 +34,9 @@ func assertPanic(t *testing.T, desc string, f func()) {
 	}()
 	f()
 }
+
+func assertErr(t *testing.T, desc string, err error) {
+	if err == nil {
+		t.Errorf("assert error: %s (nil error)", desc)
+	}
+}
