@@ -6,23 +6,17 @@ import (
 	"github.com/twharmon/govalid"
 )
 
-func init() {
-	govalid.Register(validateTestStruct{})
-}
-
-type validateTestStruct struct {
-	S string
-}
-
-type validateTestMap map[string]string
-
 func TestValidate(t *testing.T) {
-	_, nonPtrErr := govalid.Validate(validateTestStruct{})
+	type nonPtrStruct struct {
+		S string
+	}
+	govalid.Register(nonPtrStruct{})
+	_, nonPtrErr := govalid.Validate(nonPtrStruct{})
 	assertErr(t, "validate non-pointer", nonPtrErr)
 
-	testMap := make(validateTestMap)
-	testMap["asdf"] = "fdsa"
-	_, mapPtrErr := govalid.Validate(&testMap)
+	type Map map[string]string
+	m := make(Map)
+	_, mapPtrErr := govalid.Validate(&m)
 	assertErr(t, "validate pointer to map", mapPtrErr)
 
 	_, noRegisterErr := govalid.Validate(&struct{ S string }{"asdf"})

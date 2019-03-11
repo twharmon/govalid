@@ -23,6 +23,9 @@ func init() {
 }
 
 func (m *model) addToRegistry(name string) {
+	if modelStore[name] != nil {
+		panic(fmt.Sprintf("%s is already registered", name))
+	}
 	modelStore[name] = m
 }
 

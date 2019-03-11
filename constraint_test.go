@@ -12,8 +12,6 @@ type constraintTest struct {
 	Password string
 }
 
-const errMsg = "password can not contain name"
-
 func TestConstraint(t *testing.T) {
 	govalid.Register(constraintTest{})
 	govalid.AddCustom(constraintTest{}, func(i interface{}) (string, error) {
@@ -22,7 +20,7 @@ func TestConstraint(t *testing.T) {
 			return "", nil
 		}
 		if strings.Contains(u.Password, u.Name) {
-			return errMsg, nil
+			return "password can not contain name", nil
 		}
 		return "", nil
 	})
