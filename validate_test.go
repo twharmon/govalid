@@ -7,16 +7,16 @@ import (
 )
 
 func TestValidate(t *testing.T) {
-	type validateTestStruct struct {
+	type nonPtrStruct struct {
 		S string
 	}
-	govalid.Register(validateTestStruct{})
-	_, nonPtrErr := govalid.Validate(validateTestStruct{})
+	govalid.Register(nonPtrStruct{})
+	_, nonPtrErr := govalid.Validate(nonPtrStruct{})
 	assertErr(t, "validate non-pointer", nonPtrErr)
 
-	type validateTestMap map[string]string
-	testMap := make(validateTestMap)
-	_, mapPtrErr := govalid.Validate(&testMap)
+	type Map map[string]string
+	m := make(Map)
+	_, mapPtrErr := govalid.Validate(&m)
 	assertErr(t, "validate pointer to map", mapPtrErr)
 
 	_, noRegisterErr := govalid.Validate(&struct{ S string }{"asdf"})
