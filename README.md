@@ -60,7 +60,7 @@ user := &User{
 }
 userViolation, err := govalid.Validate(user)
 if err != nil {
-    // two errors are possible
+    // three errors are possible
     // 1) you did not register User yet (govalid.Register(User{}))
     // 2) you did not pass a pointer to User
     // 3) your custom validation functions, if any, return a non-nil error
