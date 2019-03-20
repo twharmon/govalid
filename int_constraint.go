@@ -8,11 +8,13 @@ import (
 )
 
 type intConstraint struct {
-	field string
-	req   bool
-	min   int
-	max   int
-	in    []int
+	field    string
+	req      bool
+	isMinSet bool
+	min      int
+	isMaxSet bool
+	max      int
+	in       []int
 }
 
 func (ic *intConstraint) validate(val reflect.Value) string {
@@ -23,10 +25,10 @@ func (ic *intConstraint) validate(val reflect.Value) string {
 	if ic.req && i == 0 {
 		return fmt.Sprintf("%s is required", ic.field)
 	}
-	if ic.max > 0 && i > ic.max {
+	if ic.isMaxSet && i > ic.max {
 		return fmt.Sprintf("%s can not be greater than %d", ic.field, ic.max)
 	}
-	if ic.min > 0 && i < ic.min {
+	if ic.isMinSet && i < ic.min {
 		return fmt.Sprintf("%s must be at least %d", ic.field, ic.min)
 	}
 	if len(ic.in) > 0 {

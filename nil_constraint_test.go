@@ -2,17 +2,19 @@ package govalid_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/twharmon/govalid"
 )
 
 func TestNil(t *testing.T) {
+	type b struct {
+		B string
+	}
 	type n struct {
-		T time.Time
+		B b
 	}
 	govalid.Register(n{})
 
 	assertValid(t, "no validation rules with empty field", &n{})
-	assertValid(t, "no validation rules with non-empty field", &n{time.Now()})
+	assertValid(t, "no validation rules with non-empty field", &n{b{"asdf"}})
 }

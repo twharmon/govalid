@@ -2,6 +2,7 @@ package govalid
 
 import (
 	"reflect"
+	"strings"
 )
 
 // Register is required for all structs that you wish
@@ -30,7 +31,11 @@ func register(s interface{}) {
 	m.name = name
 	for i := 0; i < typ.NumField(); i++ {
 		field := typ.Field(i)
-		// todo: assert is exported
+		firstLetter := string(field.Name[0])
+		if firstLetter != strings.ToUpper(firstLetter) {
+			m.registerNilConstraint()
+			continue
+		}
 		switch field.Type.Kind() {
 		case reflect.String:
 			m.registerStringConstraint(field)
@@ -42,6 +47,20 @@ func register(s interface{}) {
 			m.registerFloat32Constraint(field)
 		case reflect.Float64:
 			m.registerFloat64Constraint(field)
+		case reflect.Struct:
+			if _, ok := field.Type.FieldByName("String"); ok {
+				m.registerStringConstraint(field)
+			} else if _, ok := field.Type.FieldByName("Int64"); ok {
+				m.registerInt64Constraint(field)
+			} else if _, ok := field.Type.FieldByName("Float64"); ok {
+				m.registerFloat64Constraint(field)
+			} else if _, ok := field.Type.FieldByName("Time"); ok {
+				m.registerTimeConstraint(field)
+			} else if field.Type.String() == "time.Time" {
+				m.registerTimeConstraint(field)
+			} else {
+				m.registerNilConstraint()
+			}
 		default:
 			m.registerNilConstraint()
 		}

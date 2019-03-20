@@ -6,7 +6,10 @@ import (
 	"github.com/twharmon/govalid"
 )
 
+type unsupported map[string]string
+
 type registerTest struct {
+	A unsupported
 	S string
 }
 

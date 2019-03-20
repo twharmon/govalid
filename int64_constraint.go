@@ -8,25 +8,34 @@ import (
 )
 
 type int64Constraint struct {
-	field string
-	req   bool
-	min   int64
-	max   int64
-	in    []int64
+	field    string
+	req      bool
+	isMinSet bool
+	min      int64
+	isMaxSet bool
+	max      int64
+	in       []int64
 }
 
 func (i64c *int64Constraint) validate(val reflect.Value) string {
-	i64 := val.Interface().(int64)
-	if !i64c.req && i64 == 0 {
+	empty := true
+	i64, ok := val.Interface().(int64)
+	if !ok && val.FieldByName("Valid").Interface().(bool) {
+		i64 = val.FieldByName("Int64").Interface().(int64)
+		empty = false
+	} else {
+		empty = i64 == 0
+	}
+	if !i64c.req && empty {
 		return ""
 	}
-	if i64c.req && i64 == 0 {
+	if i64c.req && empty {
 		return fmt.Sprintf("%s is required", i64c.field)
 	}
-	if i64c.max > 0 && i64 > i64c.max {
+	if i64c.isMaxSet && i64 > i64c.max {
 		return fmt.Sprintf("%s can not be greater than %d", i64c.field, i64c.max)
 	}
-	if i64c.min > 0 && i64 < i64c.min {
+	if i64c.isMinSet && i64 < i64c.min {
 		return fmt.Sprintf("%s must be at least %d", i64c.field, i64c.min)
 	}
 	if len(i64c.in) > 0 {

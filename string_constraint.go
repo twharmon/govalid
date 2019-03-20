@@ -9,27 +9,36 @@ import (
 )
 
 type stringConstraint struct {
-	field string
-	req   bool
-	min   int
-	max   int
-	in    []string
-	regex *regexp.Regexp
+	field    string
+	req      bool
+	isMinSet bool
+	min      int
+	isMaxSet bool
+	max      int
+	in       []string
+	regex    *regexp.Regexp
 }
 
 func (sc *stringConstraint) validate(val reflect.Value) string {
-	s := val.Interface().(string)
-	if !sc.req && s == "" {
+	empty := true
+	s, ok := val.Interface().(string)
+	if !ok && val.FieldByName("Valid").Interface().(bool) {
+		s = val.FieldByName("String").Interface().(string)
+		empty = false
+	} else {
+		empty = s == ""
+	}
+	if !sc.req && empty {
 		return ""
 	}
-	if sc.req && s == "" {
+	if sc.req && empty {
 		return fmt.Sprintf("%s is required", sc.field)
 	}
 	strLen := utf8.RuneCountInString(s)
-	if sc.max > 0 && strLen > sc.max {
+	if sc.isMaxSet && strLen > sc.max {
 		return fmt.Sprintf("%s can not be longer than %d characters", sc.field, sc.max)
 	}
-	if sc.min > 0 && strLen < sc.min {
+	if sc.isMinSet && strLen < sc.min {
 		return fmt.Sprintf("%s must be at least %d characters", sc.field, sc.min)
 	}
 	if sc.regex != nil && !sc.regex.MatchString(s) {
