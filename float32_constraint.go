@@ -15,18 +15,11 @@ type float32Constraint struct {
 }
 
 func (f32c *float32Constraint) validate(val reflect.Value) string {
-	empty := true
-	f32, ok := val.Interface().(float32)
-	if !ok && val.FieldByName("Valid").Interface().(bool) {
-		f32 = val.FieldByName("Float32").Interface().(float32)
-		empty = false
-	} else {
-		empty = f32 == 0
-	}
-	if !f32c.req && empty {
+	f32 := val.Interface().(float32)
+	if !f32c.req && f32 == 0 {
 		return ""
 	}
-	if f32c.req && empty {
+	if f32c.req && f32 == 0 {
 		return fmt.Sprintf("%s is required", f32c.field)
 	}
 	if f32c.isMaxSet && f32 > f32c.max {
