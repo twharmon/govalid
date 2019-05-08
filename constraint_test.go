@@ -1,6 +1,7 @@
 package govalid_test
 
 import (
+	"errors"
 	"strings"
 	"testing"
 
@@ -42,4 +43,16 @@ func TestConstraint(t *testing.T) {
 			return "", nil
 		})
 	})
+
+	govalid.AddCustom(constraintTest{}, func(i interface{}) (string, error) {
+		u := i.(*constraintTest)
+		if u.Name == "error" {
+			return "", errors.New("something went wrong during validation")
+		}
+		return "", nil
+	})
+	_, err := govalid.Validate(&constraintTest{
+		Name: "error",
+	})
+	assertErr(t, "custom validation error", err)
 }
