@@ -64,10 +64,7 @@ func BenchmarkGovalid(b *testing.B) {
 		Score:          5.325,
 	}
 	for n := 0; n < b.N; n++ {
-		_, err := govalid.Validate(user)
-		if err != nil {
-			panic(err)
-		}
+		govalid.Violations(user)
 	}
 }
 
@@ -82,9 +79,6 @@ func BenchmarkValidatorV9(b *testing.B) {
 		Score:          5.325,
 	}
 	for n := 0; n < b.N; n++ {
-		err := validate.Struct(user)
-		if err != nil {
-			panic(err)
-		}
+		validate.Struct(user)
 	}
 }

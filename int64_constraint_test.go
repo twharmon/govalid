@@ -36,26 +36,26 @@ type i64NullMin struct {
 }
 
 func TestInt64(t *testing.T) {
-	assertValid(t, "no validation rules with empty field", &i64{})
-	assertValid(t, "no validation rules with non-empty field", &i64{5})
+	assertNilViolation(t, "no validation rules with empty field", &i64{})
+	assertNilViolation(t, "no validation rules with non-empty field", &i64{5})
 
-	assertInvalid(t, "`req` with empty field", &i64Req{})
-	assertValid(t, "`req` with non-empty field", &i64Req{5})
+	assertViolation(t, "`req` with empty field", &i64Req{})
+	assertNilViolation(t, "`req` with non-empty field", &i64Req{5})
 
-	assertValid(t, "`min` with empty field", &i64Min{})
-	assertInvalid(t, "`min` with field too less", &i64Min{3})
-	assertValid(t, "`min` with valid field", &i64Min{5})
+	assertNilViolation(t, "`min` with empty field", &i64Min{})
+	assertViolation(t, "`min` with field too less", &i64Min{3})
+	assertNilViolation(t, "`min` with valid field", &i64Min{5})
 
-	assertValid(t, "`max` with empty field", &i64Max{})
-	assertInvalid(t, "`max` with field too great", &i64Max{7})
-	assertValid(t, "`max` with valid field", &i64Max{3})
+	assertNilViolation(t, "`max` with empty field", &i64Max{})
+	assertViolation(t, "`max` with field too great", &i64Max{7})
+	assertNilViolation(t, "`max` with valid field", &i64Max{3})
 
-	assertInvalid(t, "`req|in` with empty field", &i64ReqIn{})
-	assertInvalid(t, "`req|in` with invalid field", &i64ReqIn{7})
-	assertValid(t, "`req|in` with valid field", &i64ReqIn{3})
+	assertViolation(t, "`req|in` with empty field", &i64ReqIn{})
+	assertViolation(t, "`req|in` with invalid field", &i64ReqIn{7})
+	assertNilViolation(t, "`req|in` with valid field", &i64ReqIn{3})
 
-	assertInvalid(t, "`req|min` with empty struct field", &i64NullMin{})
-	assertInvalid(t, "`req|min` with struct field too less", &i64NullMin{sql.NullInt64{Valid: true, Int64: 3}})
-	assertValid(t, "`req|min` with valid struct field", &i64NullMin{sql.NullInt64{Valid: true, Int64: 5}})
-	assertInvalid(t, "`req|min` with valid quirky struct field", &i64NullMin{sql.NullInt64{Valid: false, Int64: 2}})
+	assertViolation(t, "`req|min` with empty struct field", &i64NullMin{})
+	assertViolation(t, "`req|min` with struct field too less", &i64NullMin{sql.NullInt64{Valid: true, Int64: 3}})
+	assertNilViolation(t, "`req|min` with valid struct field", &i64NullMin{sql.NullInt64{Valid: true, Int64: 5}})
+	assertViolation(t, "`req|min` with valid quirky struct field", &i64NullMin{sql.NullInt64{Valid: false, Int64: 2}})
 }

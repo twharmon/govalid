@@ -14,19 +14,37 @@ type float32Constraint struct {
 	max      float32
 }
 
-func (f32c *float32Constraint) validate(val reflect.Value) string {
+func (f32c *float32Constraint) violation(val reflect.Value) error {
 	f32 := val.Interface().(float32)
 	if !f32c.req && f32 == 0 {
-		return ""
+		return nil
 	}
 	if f32c.req && f32 == 0 {
-		return fmt.Sprintf("%s is required", f32c.field)
+		return fmt.Errorf("%s is required", f32c.field)
 	}
 	if f32c.isMaxSet && f32 > f32c.max {
-		return fmt.Sprintf("%s can not be greater than %f", f32c.field, f32c.max)
+		return fmt.Errorf("%s can not be greater than %f", f32c.field, f32c.max)
 	}
 	if f32c.isMinSet && f32 < f32c.min {
-		return fmt.Sprintf("%s must be at least %f", f32c.field, f32c.min)
+		return fmt.Errorf("%s must be at least %f", f32c.field, f32c.min)
 	}
-	return ""
+	return nil
+}
+
+func (f32c *float32Constraint) violations(val reflect.Value) []error {
+	var vs []error
+	f32 := val.Interface().(float32)
+	if !f32c.req && f32 == 0 {
+		return nil
+	}
+	if f32c.req && f32 == 0 {
+		vs = append(vs, fmt.Errorf("%s is required", f32c.field))
+	}
+	if f32c.isMaxSet && f32 > f32c.max {
+		vs = append(vs, fmt.Errorf("%s can not be greater than %f", f32c.field, f32c.max))
+	}
+	if f32c.isMinSet && f32 < f32c.min {
+		vs = append(vs, fmt.Errorf("%s must be at least %f", f32c.field, f32c.min))
+	}
+	return vs
 }

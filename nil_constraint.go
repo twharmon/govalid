@@ -4,6 +4,10 @@ import "reflect"
 
 type nilConstraint struct{}
 
-func (nc *nilConstraint) validate(val reflect.Value) string {
-	return ""
+func (nc *nilConstraint) violation(val reflect.Value) error {
+	return nil
+}
+
+func (nc *nilConstraint) violations(val reflect.Value) []error {
+	return nil
 }

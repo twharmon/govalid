@@ -17,7 +17,7 @@ type int64Constraint struct {
 	in       []int64
 }
 
-func (i64c *int64Constraint) validate(val reflect.Value) string {
+func (i64c *int64Constraint) violation(val reflect.Value) error {
 	empty := true
 	i64, ok := val.Interface().(int64)
 	if !ok && val.FieldByName("Valid").Interface().(bool) {
@@ -27,29 +27,67 @@ func (i64c *int64Constraint) validate(val reflect.Value) string {
 		empty = i64 == 0
 	}
 	if !i64c.req && empty {
-		return ""
+		return nil
 	}
 	if i64c.req && empty {
-		return fmt.Sprintf("%s is required", i64c.field)
+		return fmt.Errorf("%s is required", i64c.field)
 	}
 	if i64c.isMaxSet && i64 > i64c.max {
-		return fmt.Sprintf("%s can not be greater than %d", i64c.field, i64c.max)
+		return fmt.Errorf("%s can not be greater than %d", i64c.field, i64c.max)
 	}
 	if i64c.isMinSet && i64 < i64c.min {
-		return fmt.Sprintf("%s must be at least %d", i64c.field, i64c.min)
+		return fmt.Errorf("%s must be at least %d", i64c.field, i64c.min)
 	}
 	if len(i64c.in) > 0 {
 		for _, opt := range i64c.in {
 			if i64 == opt {
-				return ""
+				return nil
 			}
 		}
 	} else {
-		return ""
+		return nil
 	}
 	iStrSlice := []string{}
 	for _, a := range i64c.in {
 		iStrSlice = append(iStrSlice, strconv.FormatInt(a, 10))
 	}
-	return fmt.Sprintf("%s must be in [%s]", i64c.field, strings.Join(iStrSlice, ", "))
+	return fmt.Errorf("%s must be in [%s]", i64c.field, strings.Join(iStrSlice, ", "))
+}
+
+func (i64c *int64Constraint) violations(val reflect.Value) []error {
+	var vs []error
+	empty := true
+	i64, ok := val.Interface().(int64)
+	if !ok && val.FieldByName("Valid").Interface().(bool) {
+		i64 = val.FieldByName("Int64").Interface().(int64)
+		empty = false
+	} else {
+		empty = i64 == 0
+	}
+	if !i64c.req && empty {
+		return nil
+	}
+	if i64c.req && empty {
+		vs = append(vs, fmt.Errorf("%s is required", i64c.field))
+	}
+	if i64c.isMaxSet && i64 > i64c.max {
+		vs = append(vs, fmt.Errorf("%s can not be greater than %d", i64c.field, i64c.max))
+	}
+	if i64c.isMinSet && i64 < i64c.min {
+		vs = append(vs, fmt.Errorf("%s must be at least %d", i64c.field, i64c.min))
+	}
+	if len(i64c.in) > 0 {
+		for _, opt := range i64c.in {
+			if i64 == opt {
+				return vs
+			}
+		}
+	} else {
+		return vs
+	}
+	iStrSlice := []string{}
+	for _, a := range i64c.in {
+		iStrSlice = append(iStrSlice, strconv.FormatInt(a, 10))
+	}
+	return append(vs, fmt.Errorf("%s must be in [%s]", i64c.field, strings.Join(iStrSlice, ", ")))
 }

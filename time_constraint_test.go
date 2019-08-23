@@ -26,13 +26,13 @@ type tmNullMax struct {
 
 func TestTime(t *testing.T) {
 	now := time.Now()
-	assertValid(t, "no validation rules with empty field", &tm{})
-	assertValid(t, "no validation rules with non-empty field", &tm{now})
+	assertNilViolation(t, "no validation rules with empty field", &tm{})
+	assertNilViolation(t, "no validation rules with non-empty field", &tm{now})
 
-	assertValid(t, "`min` with empty field", &tmMin{})
-	assertValid(t, "`min` with valid field", &tmMin{now})
-	assertInvalid(t, "`min` with invalid field", &tmMin{now.Add(time.Hour * 10)})
+	assertNilViolation(t, "`min` with empty field", &tmMin{})
+	assertNilViolation(t, "`min` with valid field", &tmMin{now})
+	assertViolation(t, "`min` with invalid field", &tmMin{now.Add(time.Hour * 10)})
 
-	assertInvalid(t, "`req|max` with empty struct field", &tmNullMax{})
-	assertInvalid(t, "`req|max` with invalid struct field", &tmNullMax{gosql.NullTime{Valid: true, Time: now.AddDate(0, 0, -1)}})
+	assertViolation(t, "`req|max` with empty struct field", &tmNullMax{})
+	assertViolation(t, "`req|max` with invalid struct field", &tmNullMax{gosql.NullTime{Valid: true, Time: now.AddDate(0, 0, -1)}})
 }

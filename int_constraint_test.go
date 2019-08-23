@@ -31,21 +31,21 @@ type iIn struct {
 }
 
 func TestInt(t *testing.T) {
-	assertValid(t, "no validation rules with empty field", &i{})
-	assertValid(t, "no validation rules with non-empty field", &i{5})
+	assertNilViolation(t, "no validation rules with empty field", &i{})
+	assertNilViolation(t, "no validation rules with non-empty field", &i{5})
 
-	assertInvalid(t, "`req` with empty field", &iReq{})
-	assertValid(t, "`req` with non-empty field", &iReq{5})
+	assertViolation(t, "`req` with empty field", &iReq{})
+	assertNilViolation(t, "`req` with non-empty field", &iReq{5})
 
-	assertValid(t, "`min` with empty field", &iMin{})
-	assertInvalid(t, "`min` with field too less", &iMin{3})
-	assertValid(t, "`min` with valid field", &iMin{5})
+	assertNilViolation(t, "`min` with empty field", &iMin{})
+	assertViolation(t, "`min` with field too less", &iMin{3})
+	assertNilViolation(t, "`min` with valid field", &iMin{5})
 
-	assertInvalid(t, "`req|max` with empty field", &iReqMax{})
-	assertInvalid(t, "`req|max` with field too great", &iReqMax{7})
-	assertValid(t, "`req|max` with valid field", &iReqMax{3})
+	assertViolation(t, "`req|max` with empty field", &iReqMax{})
+	assertViolation(t, "`req|max` with field too great", &iReqMax{7})
+	assertNilViolation(t, "`req|max` with valid field", &iReqMax{3})
 
-	assertValid(t, "`in` with empty field", &iIn{})
-	assertInvalid(t, "`in` with invalid field", &iIn{7})
-	assertValid(t, "`in` with valid field", &iIn{3})
+	assertNilViolation(t, "`in` with empty field", &iIn{})
+	assertViolation(t, "`in` with invalid field", &iIn{7})
+	assertNilViolation(t, "`in` with valid field", &iIn{3})
 }

@@ -32,22 +32,22 @@ type f64NullMax struct {
 }
 
 func TestFloat64(t *testing.T) {
-	assertValid(t, "no validation rules with empty field", &f64{})
-	assertValid(t, "no validation rules with non-empty field", &f64{5})
+	assertNilViolation(t, "no validation rules with empty field", &f64{})
+	assertNilViolation(t, "no validation rules with non-empty field", &f64{5})
 
-	assertInvalid(t, "`req` with empty field", &f64Req{})
-	assertValid(t, "`req` with non-empty field", &f64Req{5.5})
+	assertViolation(t, "`req` with empty field", &f64Req{})
+	assertNilViolation(t, "`req` with non-empty field", &f64Req{5.5})
 
-	assertInvalid(t, "`req|min` with empty field", &f64ReqMin{})
-	assertInvalid(t, "`req|min` with field too less", &f64ReqMin{3.5})
-	assertValid(t, "`req|min` with valid field", &f64ReqMin{5.5})
+	assertViolation(t, "`req|min` with empty field", &f64ReqMin{})
+	assertViolation(t, "`req|min` with field too less", &f64ReqMin{3.5})
+	assertNilViolation(t, "`req|min` with valid field", &f64ReqMin{5.5})
 
-	assertValid(t, "`max` with empty field", &f64Max{})
-	assertInvalid(t, "`max` with field too great", &f64Max{7.5})
-	assertValid(t, "`max` with valid field", &f64Max{3.5})
+	assertNilViolation(t, "`max` with empty field", &f64Max{})
+	assertViolation(t, "`max` with field too great", &f64Max{7.5})
+	assertNilViolation(t, "`max` with valid field", &f64Max{3.5})
 
-	assertValid(t, "`max` with empty struct field", &f64NullMax{})
-	assertInvalid(t, "`max` with struct field too great", &f64NullMax{sql.NullFloat64{Valid: true, Float64: 7.5}})
-	assertValid(t, "`max` with valid struct field", &f64NullMax{sql.NullFloat64{Valid: true, Float64: 3.5}})
-	assertValid(t, "`max` with valid quirky struct field", &f64NullMax{sql.NullFloat64{Valid: false, Float64: 13.5}})
+	assertNilViolation(t, "`max` with empty struct field", &f64NullMax{})
+	assertViolation(t, "`max` with struct field too great", &f64NullMax{sql.NullFloat64{Valid: true, Float64: 7.5}})
+	assertNilViolation(t, "`max` with valid struct field", &f64NullMax{sql.NullFloat64{Valid: true, Float64: 3.5}})
+	assertNilViolation(t, "`max` with valid quirky struct field", &f64NullMax{sql.NullFloat64{Valid: false, Float64: 13.5}})
 }

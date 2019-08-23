@@ -6,23 +6,17 @@ import (
 	"github.com/twharmon/govalid"
 )
 
-func assertInvalid(t *testing.T, desc string, s interface{}) {
-	v, err := govalid.Validate(s)
+func assertNilViolation(t *testing.T, desc string, s interface{}) {
+	err := govalid.Violation(s)
 	if err != nil {
-		t.Error(err)
-	}
-	if v == "" {
-		t.Errorf("assert invalid: %s (no violation)", desc)
+		t.Errorf("assert nil violation: %s (found %s)", desc, err)
 	}
 }
 
-func assertValid(t *testing.T, desc string, s interface{}) {
-	v, err := govalid.Validate(s)
-	if err != nil {
-		t.Error(err)
-	}
-	if v != "" {
-		t.Errorf("assert valid: %s (violation: %s)", desc, v)
+func assertViolation(t *testing.T, desc string, s interface{}) {
+	err := govalid.Violation(s)
+	if err == nil {
+		t.Errorf("assert violation: %s (found none)", desc)
 	}
 }
 
@@ -33,10 +27,4 @@ func assertPanic(t *testing.T, desc string, f func()) {
 		}
 	}()
 	f()
-}
-
-func assertErr(t *testing.T, desc string, err error) {
-	if err == nil {
-		t.Errorf("assert error: %s (nil error)", desc)
-	}
 }
