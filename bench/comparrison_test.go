@@ -53,7 +53,7 @@ func init() {
 	})
 }
 
-func BenchmarkGovalid(b *testing.B) {
+func BenchmarkGovalidPass(b *testing.B) {
 	user := &user{
 		ID:             5,
 		Name:           "Gopher",
@@ -68,7 +68,7 @@ func BenchmarkGovalid(b *testing.B) {
 	}
 }
 
-func BenchmarkValidatorV9(b *testing.B) {
+func BenchmarkValidatorV9Pass(b *testing.B) {
 	user := &user2{
 		ID:             5,
 		Name:           "Gopher",
@@ -77,6 +77,66 @@ func BenchmarkValidatorV9(b *testing.B) {
 		Role:           "admin",
 		FavoriteNumber: 918273645,
 		Score:          5.325,
+	}
+	for n := 0; n < b.N; n++ {
+		validate.Struct(user)
+	}
+}
+
+func BenchmarkGovalidOneError(b *testing.B) {
+	user := &user{
+		ID:             5,
+		Name:           "Goph",
+		Email:          "admin@gmail.com",
+		Age:            20,
+		Role:           "admin",
+		FavoriteNumber: 918273645,
+		Score:          5.325,
+	}
+	for n := 0; n < b.N; n++ {
+		govalid.Violation(user)
+	}
+}
+
+func BenchmarkValidatorV9OneError(b *testing.B) {
+	user := &user2{
+		ID:             5,
+		Name:           "Goph",
+		Email:          "admin@gmail.com",
+		Age:            20,
+		Role:           "admin",
+		FavoriteNumber: 918273645,
+		Score:          5.325,
+	}
+	for n := 0; n < b.N; n++ {
+		validate.Struct(user)
+	}
+}
+
+func BenchmarkGovalidManyErrors(b *testing.B) {
+	user := &user{
+		ID:             5,
+		Name:           "Goph",
+		Email:          "admingmail.com",
+		Age:            2,
+		Role:           "super_admin",
+		FavoriteNumber: 918273645,
+		Score:          50.325,
+	}
+	for n := 0; n < b.N; n++ {
+		govalid.Violations(user)
+	}
+}
+
+func BenchmarkValidatorV9ManyErrors(b *testing.B) {
+	user := &user2{
+		ID:             5,
+		Name:           "Goph",
+		Email:          "admingmail.com",
+		Age:            2,
+		Role:           "super_admin",
+		FavoriteNumber: 918273645,
+		Score:          50.325,
 	}
 	for n := 0; n < b.N; n++ {
 		validate.Struct(user)
