@@ -1,4 +1,4 @@
-# Govalid [![Build Status](https://travis-ci.com/twharmon/govalid.svg?branch=master)](https://travis-ci.com/twharmon/govalid) [![Coverage Status](https://coveralls.io/repos/github/twharmon/govalid/badge.svg?branch=master)](https://coveralls.io/github/twharmon/govalid?branch=master)
+# Govalid ![](https://github.com/twharmon/govalid/workflows/Test/badge.svg)
 Use Govalid to validate structs. Govalid will stop validation when it reaches the first violation.
 
 ## Usage
