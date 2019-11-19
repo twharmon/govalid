@@ -79,63 +79,63 @@ func TestRegister(t *testing.T) {
 
 	assertPanic(t, "when regex can't compile", func() {
 		type testBadRegex struct {
-			S string `validate:"regex:["`
+			S string `govalid:"regex:["`
 		}
 		govalid.Register(testBadRegex{})
 	})
 
 	assertPanic(t, "when int in won't parse", func() {
 		type testBadIntIn struct {
-			I int `validate:"in:4.3,5,6"`
+			I int `govalid:"in:4.3,5,6"`
 		}
 		govalid.Register(testBadIntIn{})
 	})
 
 	assertPanic(t, "when int64 in won't parse", func() {
 		type testBadIntIn struct {
-			I int `validate:"in:4.3,5,6"`
+			I int `govalid:"in:4.3,5,6"`
 		}
 		govalid.Register(testBadIntIn{})
 	})
 
 	assertPanic(t, "when int64 in won't parse", func() {
 		type testBadInt64In struct {
-			I int64 `validate:"in:4.3,5,6"`
+			I int64 `govalid:"in:4.3,5,6"`
 		}
 		govalid.Register(testBadInt64In{})
 	})
 
 	assertPanic(t, "when max int won't parse", func() {
 		type testBadMaxInt struct {
-			S string `validate:"max:4.3"`
+			S string `govalid:"max:4.3"`
 		}
 		govalid.Register(testBadMaxInt{})
 	})
 
 	assertPanic(t, "when max int64 won't parse", func() {
 		type testBadMaxInt64 struct {
-			I64 int64 `validate:"max:4.3"`
+			I64 int64 `govalid:"max:4.3"`
 		}
 		govalid.Register(testBadMaxInt64{})
 	})
 
 	assertPanic(t, "when max float32 won't parse", func() {
 		type testBadMaxFloat32 struct {
-			F32 float32 `validate:"max:4.g3"`
+			F32 float32 `govalid:"max:4.g3"`
 		}
 		govalid.Register(testBadMaxFloat32{})
 	})
 
 	assertPanic(t, "when max float64 won't parse", func() {
 		type testBadMaxFloat64 struct {
-			F64 float64 `validate:"max:4.g3"`
+			F64 float64 `govalid:"max:4.g3"`
 		}
 		govalid.Register(testBadMaxFloat64{})
 	})
 
 	assertNoPanic(t, "when ptr is registered", func() {
 		type testBadMaxFloat64 struct {
-			F64 float64 `validate:"max:4.3"`
+			F64 float64 `govalid:"max:4.3"`
 		}
 		govalid.Register(&testBadMaxFloat64{})
 	})

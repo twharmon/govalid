@@ -15,15 +15,15 @@ type f32 struct {
 }
 
 type f32Req struct {
-	F32 float32 `validate:"req"`
+	F32 float32 `govalid:"req"`
 }
 
 type f32ReqMin struct {
-	F32 float32 `validate:"req|min:5.5"`
+	F32 float32 `govalid:"req|min:5.5"`
 }
 
 type f32Max struct {
-	F32 float32 `validate:"max:5.5"`
+	F32 float32 `govalid:"max:5.5"`
 }
 
 func TestFloat32(t *testing.T) {

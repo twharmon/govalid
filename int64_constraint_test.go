@@ -16,23 +16,23 @@ type i64 struct {
 }
 
 type i64Req struct {
-	I64 int64 `validate:"req"`
+	I64 int64 `govalid:"req"`
 }
 
 type i64Min struct {
-	I64 int64 `validate:"min:5"`
+	I64 int64 `govalid:"min:5"`
 }
 
 type i64Max struct {
-	I64 int64 `validate:"max:5"`
+	I64 int64 `govalid:"max:5"`
 }
 
 type i64ReqIn struct {
-	I64 int64 `validate:"req|in:1,2,3"`
+	I64 int64 `govalid:"req|in:1,2,3"`
 }
 
 type i64NullMin struct {
-	I64 sql.NullInt64 `validate:"req|min:5"`
+	I64 sql.NullInt64 `govalid:"req|min:5"`
 }
 
 func TestInt64(t *testing.T) {

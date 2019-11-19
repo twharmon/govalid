@@ -17,11 +17,11 @@ type tm struct {
 }
 
 type tmMin struct {
-	T time.Time `validate:"min:0"`
+	T time.Time `govalid:"min:0"`
 }
 
 type tmNullMax struct {
-	T gosql.NullTime `validate:"req|max:3600"`
+	T gosql.NullTime `govalid:"req|max:3600"`
 }
 
 func TestTime(t *testing.T) {

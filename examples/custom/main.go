@@ -10,7 +10,7 @@ import (
 // User contains user information
 type User struct {
 	ID   int64
-	Name string `validate:"req"`
+	Name string `govalid:"req"`
 }
 
 func main() {
