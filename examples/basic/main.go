@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/twharmon/govalid"
 )
@@ -29,7 +29,5 @@ func main() {
 	}
 
 	violation := govalid.Violation(u)
-	if violation != nil {
-		log.Fatalln(violation)
-	}
+	fmt.Println("violation:", violation)
 }

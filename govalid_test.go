@@ -141,30 +141,44 @@ func TestRegister(t *testing.T) {
 	})
 }
 
+func TestViolationNotPtr(t *testing.T) {
+	var ty map[string]interface{}
+	if govalid.Violation(ty) != govalid.ErrNotPtrToStruct {
+		t.Fail()
+	}
+}
+
 func TestViolationNotStruct(t *testing.T) {
 	var ty map[string]interface{}
-	if govalid.Violation(ty) != govalid.ErrNotStruct {
+	if govalid.Violation(&ty) != govalid.ErrNotPtrToStruct {
 		t.Fail()
 	}
 }
 
 func TestViolationNotRegistered(t *testing.T) {
 	var ty struct{}
-	if govalid.Violation(ty) != govalid.ErrNotRegistered {
+	if govalid.Violation(&ty) != govalid.ErrNotRegistered {
 		t.Fail()
 	}
 }
 
 func TestViolationsNotStruct(t *testing.T) {
 	var ty map[string]interface{}
-	if govalid.Violations(ty)[0] != govalid.ErrNotStruct {
+	if govalid.Violations(&ty)[0] != govalid.ErrNotPtrToStruct {
+		t.Fail()
+	}
+}
+
+func TestViolationsNotPtr(t *testing.T) {
+	var ty struct{}
+	if govalid.Violations(ty)[0] != govalid.ErrNotPtrToStruct {
 		t.Fail()
 	}
 }
 
 func TestViolationsNotRegistered(t *testing.T) {
 	var ty struct{}
-	if govalid.Violations(ty)[0] != govalid.ErrNotRegistered {
+	if govalid.Violations(&ty)[0] != govalid.ErrNotRegistered {
 		t.Fail()
 	}
 }

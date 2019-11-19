@@ -50,6 +50,21 @@ func BenchmarkViolationFail(b *testing.B) {
 	}
 }
 
+func BenchmarkViolationNotPtrFail(b *testing.B) {
+	user := user{
+		ID:             5,
+		Name:           "Goph",
+		Email:          "admin@gmail.com",
+		Age:            20,
+		Role:           "admin",
+		FavoriteNumber: 918273645,
+		Score:          5.325,
+	}
+	for n := 0; n < b.N; n++ {
+		govalid.Violation(user)
+	}
+}
+
 func BenchmarkViolationsFail(b *testing.B) {
 	user := &user{
 		ID:             5,
