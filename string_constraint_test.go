@@ -17,28 +17,28 @@ type str struct {
 }
 
 type strReq struct {
-	S string `validate:"req"`
+	S string `govalid:"req"`
 }
 
 type strMin struct {
-	S string `validate:"min:5"`
+	S string `govalid:"min:5"`
 }
 
 type strReqMax struct {
 	ignoredField string
-	S            string `validate:"req|max:5"`
+	S            string `govalid:"req|max:5"`
 }
 
 type strRegex struct {
-	S string `validate:"regex:^[a-z]+$"`
+	S string `govalid:"regex:^[a-z]+$"`
 }
 
 type strIn struct {
-	S string `validate:"in:abc,def,ghi"`
+	S string `govalid:"in:abc,def,ghi"`
 }
 
 type strNullMax struct {
-	S sql.NullString `validate:"max:5"`
+	S sql.NullString `govalid:"max:5"`
 }
 
 func TestString(t *testing.T) {

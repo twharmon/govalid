@@ -15,19 +15,19 @@ type i struct {
 }
 
 type iReq struct {
-	I int `validate:"req"`
+	I int `govalid:"req"`
 }
 
 type iMin struct {
-	I int `validate:"min:5"`
+	I int `govalid:"min:5"`
 }
 
 type iReqMax struct {
-	I int `validate:"req|max:5"`
+	I int `govalid:"req|max:5"`
 }
 
 type iIn struct {
-	I int `validate:"in:1,2,3"`
+	I int `govalid:"in:1,2,3"`
 }
 
 func TestInt(t *testing.T) {

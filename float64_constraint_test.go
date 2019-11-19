@@ -16,19 +16,19 @@ type f64 struct {
 }
 
 type f64Req struct {
-	F64 float64 `validate:"req"`
+	F64 float64 `govalid:"req"`
 }
 
 type f64ReqMin struct {
-	F64 float64 `validate:"req|min:5.5"`
+	F64 float64 `govalid:"req|min:5.5"`
 }
 
 type f64Max struct {
-	F64 float64 `validate:"max:5.5"`
+	F64 float64 `govalid:"max:5.5"`
 }
 
 type f64NullMax struct {
-	F64 sql.NullFloat64 `validate:"max:5.5"`
+	F64 sql.NullFloat64 `govalid:"max:5.5"`
 }
 
 func TestFloat64(t *testing.T) {

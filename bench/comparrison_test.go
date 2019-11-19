@@ -8,12 +8,12 @@ import (
 
 type user struct {
 	ID             int64
-	Name           string  `validate:"req|min:5|max:15|regex:^[a-zA-Z]+$"`
-	Email          string  `validate:"req|min:3|max:25|regex:^.+@.+$"`
-	Age            int     `validate:"min:3|max:120"`
-	Role           string  `validate:"in:admin,user,editor"`
-	FavoriteNumber int64   `validate:"req|min:1|max:999999999999999"`
-	Score          float64 `validate:"req|min:3.33|max:10.45"`
+	Name           string  `govalid:"req|min:5|max:15|regex:^[a-zA-Z]+$"`
+	Email          string  `govalid:"req|min:3|max:25|regex:^.+@.+$"`
+	Age            int     `govalid:"min:3|max:120"`
+	Role           string  `govalid:"in:admin,user,editor"`
+	FavoriteNumber int64   `govalid:"req|min:1|max:999999999999999"`
+	Score          float64 `govalid:"req|min:3.33|max:10.45"`
 }
 
 func init() {

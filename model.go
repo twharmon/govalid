@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const tagKey = "validate"
+const tagKey = "govalid"
 
 type model struct {
 	name        string
