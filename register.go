@@ -20,8 +20,8 @@ func Register(structs ...interface{}) {
 
 func register(s interface{}) {
 	typ := reflect.TypeOf(s)
-	if typ.Kind() == reflect.Ptr {
-		panic("pointers can not be registered")
+	for typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
 	}
 	if typ.Kind() != reflect.Struct {
 		panic("only structs can be registered")

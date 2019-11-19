@@ -17,7 +17,7 @@ type User struct {
 }
 
 func main() {
-	govalid.Register(User{})
+	govalid.Register(&User{})
 
 	u := &User{
 		ID:    5,

@@ -15,8 +15,8 @@ type constraint interface {
 // add cusrom validation functions before validating.
 func AddCustom(s interface{}, f ...func(interface{}) error) {
 	t := reflect.TypeOf(s)
-	if t.Kind() == reflect.Ptr {
-		panic("s can not be a pointer")
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
 	}
 	n := t.Name()
 	m := modelStore[n]
