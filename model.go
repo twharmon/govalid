@@ -18,11 +18,10 @@ type model struct {
 
 var modelStore map[string]*model
 
-func init() {
-	modelStore = make(map[string]*model)
-}
-
 func (m *model) addToRegistry(name string) {
+	if modelStore == nil {
+		modelStore = make(map[string]*model)
+	}
 	if modelStore[name] != nil {
 		panic(fmt.Sprintf("%s is already registered", name))
 	}

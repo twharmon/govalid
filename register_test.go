@@ -14,10 +14,6 @@ type registerTest struct {
 }
 
 func TestRegister(t *testing.T) {
-	assertPanic(t, "when pointer", func() {
-		govalid.Register(&registerTest{})
-	})
-
 	assertPanic(t, "when already registered", func() {
 		govalid.Register(registerTest{})
 		govalid.Register(registerTest{})

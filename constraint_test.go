@@ -32,12 +32,6 @@ func TestConstraint(t *testing.T) {
 		Password: "Gopher123",
 	})
 
-	assertPanic(t, "custom validation with pointer", func() {
-		govalid.AddCustom(&constraintTest{}, func(i interface{}) error {
-			return nil
-		})
-	})
-
 	assertPanic(t, "custom validation without registration", func() {
 		govalid.AddCustom(struct{ S string }{}, func(i interface{}) error {
 			return nil
