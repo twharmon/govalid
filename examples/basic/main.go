@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/twharmon/govalid"
 )
@@ -17,7 +17,7 @@ type User struct {
 }
 
 func main() {
-	govalid.Register(User{})
+	govalid.Register(&User{})
 
 	u := &User{
 		ID:    5,
@@ -28,8 +28,6 @@ func main() {
 		Grade: 99.5,
 	}
 
-	violations := govalid.Violations(u)
-	if len(violations) > 0 {
-		log.Fatalln(violations)
-	}
+	violation := govalid.Violation(u)
+	fmt.Println("violation:", violation)
 }

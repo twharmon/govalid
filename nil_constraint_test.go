@@ -15,6 +15,6 @@ func TestNil(t *testing.T) {
 	}
 	govalid.Register(n{})
 
-	assertNilViolation(t, "no validation rules with empty field", &n{})
-	assertNilViolation(t, "no validation rules with non-empty field", &n{b{"asdf"}})
+	assertNoViolation(t, "no validation rules with empty field", &n{})
+	assertNoViolation(t, "no validation rules with non-empty field", &n{b{"asdf"}})
 }

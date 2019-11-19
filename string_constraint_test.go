@@ -42,30 +42,30 @@ type strNullMax struct {
 }
 
 func TestString(t *testing.T) {
-	assertNilViolation(t, "no validation rules with empty field", &str{})
-	assertNilViolation(t, "no validation rules with non-empty field", &str{"asdf", "asdf"})
+	assertNoViolation(t, "no validation rules with empty field", &str{})
+	assertNoViolation(t, "no validation rules with non-empty field", &str{"asdf", "asdf"})
 
 	assertViolation(t, "`req` with empty field", &strReq{})
-	assertNilViolation(t, "`req` with non-empty field", &strReq{"asdf"})
+	assertNoViolation(t, "`req` with non-empty field", &strReq{"asdf"})
 
-	assertNilViolation(t, "`min` with empty field", &strMin{})
+	assertNoViolation(t, "`min` with empty field", &strMin{})
 	assertViolation(t, "`min` with field too short", &strMin{"asdf"})
-	assertNilViolation(t, "`min` with valid field", &strMin{"asdfasdf"})
+	assertNoViolation(t, "`min` with valid field", &strMin{"asdfasdf"})
 
 	assertViolation(t, "`req|max` with empty field", &strReqMax{})
 	assertViolation(t, "`req|max` with field too long", &strReqMax{"fdsa", "asdfasdf"})
-	assertNilViolation(t, "`req|max` with valid field", &strReqMax{"fdsa", "asdf"})
+	assertNoViolation(t, "`req|max` with valid field", &strReqMax{"fdsa", "asdf"})
 
-	assertNilViolation(t, "`regex` with empty field", &strRegex{})
+	assertNoViolation(t, "`regex` with empty field", &strRegex{})
 	assertViolation(t, "`regex` with invalid field", &strRegex{"asdf0"})
-	assertNilViolation(t, "`regex` with valid field", &strRegex{"asdf"})
+	assertNoViolation(t, "`regex` with valid field", &strRegex{"asdf"})
 
-	assertNilViolation(t, "`in` with empty field", &strIn{})
+	assertNoViolation(t, "`in` with empty field", &strIn{})
 	assertViolation(t, "`in` with invalid field", &strIn{"abcd"})
-	assertNilViolation(t, "`in` with valid field", &strIn{"def"})
+	assertNoViolation(t, "`in` with valid field", &strIn{"def"})
 
-	assertNilViolation(t, "`max` with empty struct field", &strNullMax{})
+	assertNoViolation(t, "`max` with empty struct field", &strNullMax{})
 	assertViolation(t, "`max` with struct field too long", &strNullMax{sql.NullString{Valid: true, String: "asdfasdf"}})
-	assertNilViolation(t, "`max` with valid struct field", &strNullMax{sql.NullString{Valid: true, String: "asdf"}})
-	assertNilViolation(t, "`max` with valid quirky struct field", &strNullMax{sql.NullString{Valid: false, String: "asdasdfasdff"}})
+	assertNoViolation(t, "`max` with valid struct field", &strNullMax{sql.NullString{Valid: true, String: "asdf"}})
+	assertNoViolation(t, "`max` with valid quirky struct field", &strNullMax{sql.NullString{Valid: false, String: "asdasdfasdff"}})
 }
