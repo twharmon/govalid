@@ -13,6 +13,36 @@ var ErrNotStruct = errors.New("only structs can be validated")
 // validate a type that has not yet been registered.
 var ErrNotRegistered = errors.New("only structs can be validated")
 
+// Register is required for all structs that you wish
+// to validate. It is intended to be ran at load time
+// and caches information about the structs to reduce
+// run time allocations.
+//
+// NOTE: This is not thread safe. You must
+// register structs before validating.
+func Register(structs ...interface{}) {
+	for _, s := range structs {
+		register(s)
+	}
+}
+
+// AddCustom adds custom validation functions to struct s.
+//
+// NOTE: This is not thread safe. You must
+// add cusrom validation functions before validating.
+func AddCustom(s interface{}, f ...func(interface{}) error) {
+	t := reflect.TypeOf(s)
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	n := t.Name()
+	m := modelStore[n]
+	if m == nil {
+		panic("struct s must be registered before adding a custom validator")
+	}
+	m.custom = append(m.custom, f...)
+}
+
 // Violation checks the struct s against all constraints and custom
 // validation functions, if any. It returns an error if the struct
 // fails validation. If the type being validated is not a struct,

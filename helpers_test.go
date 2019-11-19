@@ -38,3 +38,12 @@ func assertPanic(t *testing.T, desc string, f func()) {
 	}()
 	f()
 }
+
+func assertNoPanic(t *testing.T, desc string, f func()) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("assert no panic: %s (found %s)", desc, r)
+		}
+	}()
+	f()
+}

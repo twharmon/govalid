@@ -5,19 +5,6 @@ import (
 	"strings"
 )
 
-// Register is required for all structs that you wish
-// to validate. It is intended to be ran at load time
-// and caches information about the structs to reduce
-// run time allocations.
-//
-// NOTE: This is not thread safe. You must
-// register structs before validating.
-func Register(structs ...interface{}) {
-	for _, s := range structs {
-		register(s)
-	}
-}
-
 func register(s interface{}) {
 	typ := reflect.TypeOf(s)
 	for typ.Kind() == reflect.Ptr {
