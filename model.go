@@ -30,7 +30,10 @@ func (m *model) addToRegistry(name string) {
 }
 
 func (m *model) violation(s interface{}) error {
-	val := reflect.ValueOf(s).Elem()
+	val := reflect.ValueOf(s)
+	for val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
 	for i, c := range m.constraints {
 		if err := c.violation(val.Field(i)); err != nil {
 			return err
@@ -46,11 +49,12 @@ func (m *model) violation(s interface{}) error {
 
 func (m *model) violations(s interface{}) []error {
 	var vs []error
-	val := reflect.ValueOf(s).Elem()
+	val := reflect.ValueOf(s)
+	for val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
 	for i, c := range m.constraints {
-		if err := c.violation(val.Field(i)); err != nil {
-			vs = append(vs, err)
-		}
+		vs = append(vs, c.violations(val.Field(i))...)
 	}
 	for _, v := range m.custom {
 		if err := v(s); err != nil {

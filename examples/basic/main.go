@@ -28,8 +28,8 @@ func main() {
 		Grade: 99.5,
 	}
 
-	violations := govalid.Violations(u)
-	if len(violations) > 0 {
-		log.Fatalln(violations)
+	violation := govalid.Violation(u)
+	if violation != nil {
+		log.Fatalln(violation)
 	}
 }

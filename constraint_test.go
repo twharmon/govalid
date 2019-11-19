@@ -26,7 +26,7 @@ func TestConstraint(t *testing.T) {
 		return nil
 	})
 
-	assertNilViolation(t, "custom validation rule with empty fields", &constraintTest{})
+	assertNoViolation(t, "custom validation rule with empty fields", &constraintTest{})
 	assertViolation(t, "custom validation rule with invalid fields", &constraintTest{
 		Name:     "Gopher",
 		Password: "Gopher123",

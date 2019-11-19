@@ -26,11 +26,11 @@ type tmNullMax struct {
 
 func TestTime(t *testing.T) {
 	now := time.Now()
-	assertNilViolation(t, "no validation rules with empty field", &tm{})
-	assertNilViolation(t, "no validation rules with non-empty field", &tm{now})
+	assertNoViolation(t, "no validation rules with empty field", &tm{})
+	assertNoViolation(t, "no validation rules with non-empty field", &tm{now})
 
-	assertNilViolation(t, "`min` with empty field", &tmMin{})
-	assertNilViolation(t, "`min` with valid field", &tmMin{now})
+	assertNoViolation(t, "`min` with empty field", &tmMin{})
+	assertNoViolation(t, "`min` with valid field", &tmMin{now})
 	assertViolation(t, "`min` with invalid field", &tmMin{now.Add(time.Hour * 10)})
 
 	assertViolation(t, "`req|max` with empty struct field", &tmNullMax{})
