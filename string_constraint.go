@@ -19,7 +19,7 @@ type stringConstraint struct {
 	regex    *regexp.Regexp
 }
 
-func (sc *stringConstraint) violation(val reflect.Value) error {
+func (sc *stringConstraint) error(val reflect.Value) error {
 	empty := true
 	s, ok := val.Interface().(string)
 	if !ok && val.FieldByName("Valid").Interface().(bool) {
@@ -32,17 +32,17 @@ func (sc *stringConstraint) violation(val reflect.Value) error {
 		return nil
 	}
 	if sc.req && empty {
-		return fmt.Errorf("%s is required", sc.field)
+		return fmt.Errorf("%w: %s is required", ErrInvalidStruct, sc.field)
 	}
 	strLen := utf8.RuneCountInString(s)
 	if sc.isMaxSet && strLen > sc.max {
-		return fmt.Errorf("%s can not be longer than %d characters", sc.field, sc.max)
+		return fmt.Errorf("%w: %s can not be longer than %d characters", ErrInvalidStruct, sc.field, sc.max)
 	}
 	if sc.isMinSet && strLen < sc.min {
-		return fmt.Errorf("%s must be at least %d characters", sc.field, sc.min)
+		return fmt.Errorf("%w: %s must be at least %d characters", ErrInvalidStruct, sc.field, sc.min)
 	}
 	if sc.regex != nil && !sc.regex.MatchString(s) {
-		return fmt.Errorf("%s must match regex /%s/", sc.field, sc.regex.String())
+		return fmt.Errorf("%w: %s must match regex /%s/", ErrInvalidStruct, sc.field, sc.regex.String())
 	}
 	if len(sc.in) > 0 {
 		for _, opt := range sc.in {
@@ -53,10 +53,10 @@ func (sc *stringConstraint) violation(val reflect.Value) error {
 	} else {
 		return nil
 	}
-	return fmt.Errorf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", "))
+	return fmt.Errorf("%w: %s must be in [%s]", ErrInvalidStruct, sc.field, strings.Join(sc.in, ", "))
 }
 
-func (sc *stringConstraint) violations(val reflect.Value) []error {
+func (sc *stringConstraint) errors(val reflect.Value) []error {
 	var vs []error
 	empty := true
 	s, ok := val.Interface().(string)
@@ -70,17 +70,17 @@ func (sc *stringConstraint) violations(val reflect.Value) []error {
 		return nil
 	}
 	if sc.req && empty {
-		vs = append(vs, fmt.Errorf("%s is required", sc.field))
+		vs = append(vs, fmt.Errorf("%w: %s is required", ErrInvalidStruct, sc.field))
 	}
 	strLen := utf8.RuneCountInString(s)
 	if sc.isMaxSet && strLen > sc.max {
-		vs = append(vs, fmt.Errorf("%s can not be longer than %d characters", sc.field, sc.max))
+		vs = append(vs, fmt.Errorf("%w: %s can not be longer than %d characters", ErrInvalidStruct, sc.field, sc.max))
 	}
 	if sc.isMinSet && strLen < sc.min {
-		vs = append(vs, fmt.Errorf("%s must be at least %d characters", sc.field, sc.min))
+		vs = append(vs, fmt.Errorf("%w: %s must be at least %d characters", ErrInvalidStruct, sc.field, sc.min))
 	}
 	if sc.regex != nil && !sc.regex.MatchString(s) {
-		vs = append(vs, fmt.Errorf("%s must match regex /%s/", sc.field, sc.regex.String()))
+		vs = append(vs, fmt.Errorf("%w: %s must match regex /%s/", ErrInvalidStruct, sc.field, sc.regex.String()))
 	}
 	if len(sc.in) > 0 {
 		for _, opt := range sc.in {
@@ -91,5 +91,5 @@ func (sc *stringConstraint) violations(val reflect.Value) []error {
 	} else {
 		return vs
 	}
-	return append(vs, fmt.Errorf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", ")))
+	return append(vs, fmt.Errorf("%w: %s must be in [%s]", ErrInvalidStruct, sc.field, strings.Join(sc.in, ", ")))
 }
