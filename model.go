@@ -179,8 +179,8 @@ func (m *model) registerFloat64Constraint(field reflect.StructField) error {
 	return nil
 }
 
-func (m *model) registerTimeConstraint(field reflect.StructField) error {
-	c := new(timeConstraint)
+func (m *model) registerFloat32Constraint(field reflect.StructField) error {
+	c := new(float32Constraint)
 	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
@@ -188,13 +188,13 @@ func (m *model) registerTimeConstraint(field reflect.StructField) error {
 		return nil
 	}
 	c.req = m.getBoolFromTag(tag, "req")
-	if max, ok, err := m.getInt64FromTag(field, tag, "max"); err != nil {
+	if max, ok, err := m.getFloat32FromTag(field, tag, "max"); err != nil {
 		return err
 	} else if ok {
 		c.isMaxSet = true
 		c.max = max
 	}
-	if min, ok, err := m.getInt64FromTag(field, tag, "min"); err != nil {
+	if min, ok, err := m.getFloat32FromTag(field, tag, "min"); err != nil {
 		return err
 	} else if ok {
 		c.isMinSet = true

@@ -16,9 +16,6 @@ type Validator struct {
 // to validate. It is intended to be ran at load time
 // and caches information about the structs to reduce
 // run time allocations.
-//
-// NOTE: This is not thread safe. You must
-// register structs before validating.
 func (v *Validator) Register(structs ...interface{}) error {
 	for _, s := range structs {
 		if err := v.register(s); err != nil {
@@ -29,9 +26,6 @@ func (v *Validator) Register(structs ...interface{}) error {
 }
 
 // AddCustom adds custom validation functions to struct s.
-//
-// NOTE: This is not thread safe. You must
-// add cusrom validation functions before validating.
 func (v *Validator) AddCustom(s interface{}, f ...func(interface{}) string) error {
 	t := reflect.TypeOf(s)
 	for t.Kind() == reflect.Ptr {
@@ -121,7 +115,7 @@ func (v *Validator) register(s interface{}) error {
 				return err
 			}
 		case reflect.Float32:
-			if err := m.registerFloat64Constraint(field); err != nil {
+			if err := m.registerFloat32Constraint(field); err != nil {
 				return err
 			}
 		case reflect.Float64:
@@ -139,14 +133,6 @@ func (v *Validator) register(s interface{}) error {
 				}
 			} else if _, ok := field.Type.FieldByName("Float64"); ok {
 				if err := m.registerFloat64Constraint(field); err != nil {
-					return err
-				}
-			} else if _, ok := field.Type.FieldByName("Time"); ok {
-				if err := m.registerTimeConstraint(field); err != nil {
-					return err
-				}
-			} else if field.Type.String() == "time.Time" {
-				if err := m.registerTimeConstraint(field); err != nil {
 					return err
 				}
 			} else {
