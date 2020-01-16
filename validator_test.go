@@ -28,6 +28,40 @@ func TestValidatorViolationNotStruct(t *testing.T) {
 	equals(t, err, govalid.ErrNotPtrToStruct)
 }
 
+func TestValidatorViolationCustomValid(t *testing.T) {
+	v := govalid.New()
+	type T struct {
+		F string `govalid:"req"`
+	}
+	check(t, v.Register(T{}))
+	check(t, v.AddCustom(T{}, func(v interface{}) string {
+		if v.(*T).F == "bar" {
+			return "F must not be bar"
+		}
+		return ""
+	}))
+	vio, err := v.Violation(&T{"foo"})
+	check(t, err)
+	equals(t, vio, "")
+}
+
+func TestValidatorViolationCustomInvalid(t *testing.T) {
+	v := govalid.New()
+	type T struct {
+		F string `govalid:"req"`
+	}
+	check(t, v.Register(T{}))
+	check(t, v.AddCustom(T{}, func(v interface{}) string {
+		if v.(*T).F == "foo" {
+			return "F must not be foo"
+		}
+		return ""
+	}))
+	vio, err := v.Violation(&T{"foo"})
+	check(t, err)
+	equals(t, vio, "F must not be foo")
+}
+
 func TestValidatorViolationStringReqInvalid(t *testing.T) {
 	v := govalid.New()
 	type T struct {
@@ -46,6 +80,50 @@ func TestValidatorViolationStringReqValid(t *testing.T) {
 	}
 	check(t, v.Register(T{}))
 	vio, err := v.Violation(&T{"foo"})
+	check(t, err)
+	equals(t, vio, "")
+}
+
+func TestValidatorViolationStringRegexInvalid(t *testing.T) {
+	v := govalid.New()
+	type T struct {
+		F string `govalid:"regex:^[a-z]+$"`
+	}
+	check(t, v.Register(T{}))
+	vio, err := v.Violation(&T{"Foo"})
+	check(t, err)
+	contains(t, vio, "F", "match", "regex")
+}
+
+func TestValidatorViolationStringRegexValid(t *testing.T) {
+	v := govalid.New()
+	type T struct {
+		F string `govalid:"regex:^[a-z]+$"`
+	}
+	check(t, v.Register(T{}))
+	vio, err := v.Violation(&T{"foo"})
+	check(t, err)
+	equals(t, vio, "")
+}
+
+func TestValidatorViolationStringMinInvalid(t *testing.T) {
+	v := govalid.New()
+	type T struct {
+		F string `govalid:"min:6"`
+	}
+	check(t, v.Register(T{}))
+	vio, err := v.Violation(&T{"foo"})
+	check(t, err)
+	contains(t, vio, "F", "at least")
+}
+
+func TestValidatorViolationStringMinValid(t *testing.T) {
+	v := govalid.New()
+	type T struct {
+		F string `govalid:"min:6"`
+	}
+	check(t, v.Register(T{}))
+	vio, err := v.Violation(&T{"foobarbaz"})
 	check(t, err)
 	equals(t, vio, "")
 }
