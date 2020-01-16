@@ -5,6 +5,6 @@ import (
 )
 
 type constraint interface {
-	violation(reflect.Value) error
-	violations(reflect.Value) []error
+	violation(reflect.Value) string
+	violations(reflect.Value) []string
 }

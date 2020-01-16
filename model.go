@@ -13,41 +13,29 @@ const tagKey = "govalid"
 type model struct {
 	name        string
 	constraints []constraint
-	custom      []func(interface{}) error
+	custom      []func(interface{}) string
 }
 
-var modelStore map[string]*model
-
-func (m *model) addToRegistry(name string) {
-	if modelStore == nil {
-		modelStore = make(map[string]*model)
-	}
-	if modelStore[name] != nil {
-		panic(fmt.Sprintf("%s is already registered", name))
-	}
-	modelStore[name] = m
-}
-
-func (m *model) violation(s interface{}) error {
+func (m *model) violation(s interface{}) string {
 	val := reflect.ValueOf(s)
 	for val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
 	for i, c := range m.constraints {
-		if err := c.violation(val.Field(i)); err != nil {
-			return err
+		if v := c.violation(val.Field(i)); v != "" {
+			return v
 		}
 	}
 	for _, v := range m.custom {
-		if err := v(s); err != nil {
-			return err
+		if msg := v(s); msg != "" {
+			return msg
 		}
 	}
-	return nil
+	return ""
 }
 
-func (m *model) violations(s interface{}) []error {
-	var vs []error
+func (m *model) violations(s interface{}) []string {
+	var vs []string
 	val := reflect.ValueOf(s)
 	for val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -56,27 +44,31 @@ func (m *model) violations(s interface{}) []error {
 		vs = append(vs, c.violations(val.Field(i))...)
 	}
 	for _, v := range m.custom {
-		if err := v(s); err != nil {
-			vs = append(vs, err)
+		if msg := v(s); msg != "" {
+			vs = append(vs, msg)
 		}
 	}
 	return vs
 }
 
-func (m *model) registerStringConstraint(field reflect.StructField) {
+func (m *model) registerStringConstraint(field reflect.StructField) error {
 	c := new(stringConstraint)
 	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
-		return
+		return nil
 	}
 	c.req = m.getBoolFromTag(tag, "req")
-	if max, ok := m.getIntFromTag(field, tag, "max"); ok {
+	if max, ok, err := m.getIntFromTag(field, tag, "max"); err != nil {
+		return err
+	} else if ok {
 		c.isMaxSet = true
 		c.max = max
 	}
-	if min, ok := m.getIntFromTag(field, tag, "min"); ok {
+	if min, ok, err := m.getIntFromTag(field, tag, "min"); err != nil {
+		return err
+	} else if ok {
 		c.isMinSet = true
 		c.min = min
 	}
@@ -86,27 +78,32 @@ func (m *model) registerStringConstraint(field reflect.StructField) {
 	if reStr, ok := m.getStringFromTag(tag, "regex"); ok {
 		re, err := regexp.Compile(reStr)
 		if err != nil {
-			panic(fmt.Sprintf("govalid model registration error (%s.%s `regex:%s`): %s", m.name, field.Name, reStr, err.Error()))
+			return fmt.Errorf("govalid model registration error (%s.%s `regex:%s`): %w", m.name, field.Name, reStr, err)
 		}
 		c.regex = re
 	}
 	m.constraints = append(m.constraints, c)
+	return nil
 }
 
-func (m *model) registerIntConstraint(field reflect.StructField) {
+func (m *model) registerIntConstraint(field reflect.StructField) error {
 	c := new(intConstraint)
 	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
-		return
+		return nil
 	}
 	c.req = m.getBoolFromTag(tag, "req")
-	if max, ok := m.getIntFromTag(field, tag, "max"); ok {
+	if max, ok, err := m.getIntFromTag(field, tag, "max"); err != nil {
+		return err
+	} else if ok {
 		c.isMaxSet = true
 		c.max = max
 	}
-	if min, ok := m.getIntFromTag(field, tag, "min"); ok {
+	if min, ok, err := m.getIntFromTag(field, tag, "min"); err != nil {
+		return err
+	} else if ok {
 		c.isMinSet = true
 		c.min = min
 	}
@@ -114,28 +111,33 @@ func (m *model) registerIntConstraint(field reflect.StructField) {
 		for _, optStr := range strings.Split(in, ",") {
 			opt, err := strconv.Atoi(optStr)
 			if err != nil {
-				panic(fmt.Sprintf("govalid model registration error (%s.%s `in:%s`): %s", m.name, field.Name, in, err.Error()))
+				return fmt.Errorf("govalid model registration error (%s.%s `in:%s`): %w", m.name, field.Name, in, err)
 			}
 			c.in = append(c.in, opt)
 		}
 	}
 	m.constraints = append(m.constraints, c)
+	return nil
 }
 
-func (m *model) registerInt64Constraint(field reflect.StructField) {
+func (m *model) registerInt64Constraint(field reflect.StructField) error {
 	c := new(int64Constraint)
 	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
-		return
+		return nil
 	}
 	c.req = m.getBoolFromTag(tag, "req")
-	if max, ok := m.getInt64FromTag(field, tag, "max"); ok {
+	if max, ok, err := m.getInt64FromTag(field, tag, "max"); err != nil {
+		return err
+	} else if ok {
 		c.isMaxSet = true
 		c.max = max
 	}
-	if min, ok := m.getInt64FromTag(field, tag, "min"); ok {
+	if min, ok, err := m.getInt64FromTag(field, tag, "min"); err != nil {
+		return err
+	} else if ok {
 		c.isMinSet = true
 		c.min = min
 	}
@@ -143,72 +145,63 @@ func (m *model) registerInt64Constraint(field reflect.StructField) {
 		for _, optStr := range strings.Split(in, ",") {
 			opt, err := strconv.ParseInt(optStr, 10, 64)
 			if err != nil {
-				panic(fmt.Sprintf("govalid model registration error (%s.%s `in:%s`): %s", m.name, field.Name, in, err.Error()))
+				return fmt.Errorf("govalid model registration error (%s.%s `in:%s`): %w", m.name, field.Name, in, err)
 			}
 			c.in = append(c.in, opt)
 		}
 	}
 	m.constraints = append(m.constraints, c)
+	return nil
 }
 
-func (m *model) registerFloat64Constraint(field reflect.StructField) {
+func (m *model) registerFloat64Constraint(field reflect.StructField) error {
 	c := new(float64Constraint)
 	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
-		return
+		return nil
 	}
 	c.req = m.getBoolFromTag(tag, "req")
-	if max, ok := m.getFloat64FromTag(field, tag, "max"); ok {
+	if max, ok, err := m.getFloat64FromTag(field, tag, "max"); err != nil {
+		return err
+	} else if ok {
 		c.isMaxSet = true
 		c.max = max
 	}
-	if min, ok := m.getFloat64FromTag(field, tag, "min"); ok {
+	if min, ok, err := m.getFloat64FromTag(field, tag, "min"); err != nil {
+		return err
+	} else if ok {
 		c.isMinSet = true
 		c.min = min
 	}
 	m.constraints = append(m.constraints, c)
+	return nil
 }
 
-func (m *model) registerFloat32Constraint(field reflect.StructField) {
-	c := new(float32Constraint)
-	c.field = field.Name
-	tag, ok := field.Tag.Lookup(tagKey)
-	if !ok {
-		m.registerNilConstraint()
-		return
-	}
-	c.req = m.getBoolFromTag(tag, "req")
-	if max, ok := m.getFloat32FromTag(field, tag, "max"); ok {
-		c.isMaxSet = true
-		c.max = max
-	}
-	if min, ok := m.getFloat32FromTag(field, tag, "min"); ok {
-		c.isMinSet = true
-		c.min = min
-	}
-	m.constraints = append(m.constraints, c)
-}
-
-func (m *model) registerTimeConstraint(field reflect.StructField) {
+func (m *model) registerTimeConstraint(field reflect.StructField) error {
 	c := new(timeConstraint)
 	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
 	if !ok {
 		m.registerNilConstraint()
-		return
+		return nil
 	}
 	c.req = m.getBoolFromTag(tag, "req")
-	if max, ok := m.getInt64FromTag(field, tag, "max"); ok {
+	if max, ok, err := m.getInt64FromTag(field, tag, "max"); err != nil {
+		return err
+	} else if ok {
 		c.isMaxSet = true
 		c.max = max
 	}
-	if min, ok := m.getInt64FromTag(field, tag, "min"); ok {
+	if min, ok, err := m.getInt64FromTag(field, tag, "min"); err != nil {
+		return err
+	} else if ok {
 		c.isMinSet = true
 		c.min = min
 	}
 	m.constraints = append(m.constraints, c)
+	return nil
 }
 
 func (m *model) registerNilConstraint() {
@@ -226,7 +219,7 @@ func (m *model) getBoolFromTag(tag string, key string) bool {
 	return false
 }
 
-func (m *model) getIntFromTag(field reflect.StructField, tag string, key string) (int, bool) {
+func (m *model) getIntFromTag(field reflect.StructField, tag string, key string) (int, bool, error) {
 	cs := strings.Split(tag, "|")
 	for _, c := range cs {
 		parts := strings.Split(c, ":")
@@ -236,15 +229,15 @@ func (m *model) getIntFromTag(field reflect.StructField, tag string, key string)
 		if parts[0] == key {
 			i, err := strconv.Atoi(parts[1])
 			if err != nil {
-				panic(fmt.Sprintf("govalid model registration error (%s.%s `%s`): %s", m.name, field.Name, c, err.Error()))
+				return 0, false, fmt.Errorf("govalid model registration error (%s.%s `%s`): %w", m.name, field.Name, c, err)
 			}
-			return i, true
+			return i, true, nil
 		}
 	}
-	return 0, false
+	return 0, false, nil
 }
 
-func (m *model) getInt64FromTag(field reflect.StructField, tag string, key string) (int64, bool) {
+func (m *model) getInt64FromTag(field reflect.StructField, tag string, key string) (int64, bool, error) {
 	cs := strings.Split(tag, "|")
 	for _, c := range cs {
 		parts := strings.Split(c, ":")
@@ -254,15 +247,15 @@ func (m *model) getInt64FromTag(field reflect.StructField, tag string, key strin
 		if parts[0] == key {
 			i, err := strconv.ParseInt(parts[1], 10, 64)
 			if err != nil {
-				panic(fmt.Sprintf("govalid model registration error (%s.%s `%s`): %s", m.name, field.Name, c, err.Error()))
+				return 0, false, fmt.Errorf("govalid model registration error (%s.%s `%s`): %w", m.name, field.Name, c, err)
 			}
-			return i, true
+			return i, true, nil
 		}
 	}
-	return 0, false
+	return 0, false, nil
 }
 
-func (m *model) getFloat32FromTag(field reflect.StructField, tag string, key string) (float32, bool) {
+func (m *model) getFloat32FromTag(field reflect.StructField, tag string, key string) (float32, bool, error) {
 	cs := strings.Split(tag, "|")
 	for _, c := range cs {
 		parts := strings.Split(c, ":")
@@ -272,15 +265,15 @@ func (m *model) getFloat32FromTag(field reflect.StructField, tag string, key str
 		if parts[0] == key {
 			f, err := strconv.ParseFloat(parts[1], 32)
 			if err != nil {
-				panic(fmt.Sprintf("govalid model registration error (%s.%s `%s`): %s", m.name, field.Name, c, err.Error()))
+				return 0, false, fmt.Errorf("govalid model registration error (%s.%s `%s`): %w", m.name, field.Name, c, err)
 			}
-			return float32(f), true
+			return float32(f), true, nil
 		}
 	}
-	return 0, false
+	return 0, false, nil
 }
 
-func (m *model) getFloat64FromTag(field reflect.StructField, tag string, key string) (float64, bool) {
+func (m *model) getFloat64FromTag(field reflect.StructField, tag string, key string) (float64, bool, error) {
 	cs := strings.Split(tag, "|")
 	for _, c := range cs {
 		parts := strings.Split(c, ":")
@@ -290,12 +283,12 @@ func (m *model) getFloat64FromTag(field reflect.StructField, tag string, key str
 		if parts[0] == key {
 			f, err := strconv.ParseFloat(parts[1], 64)
 			if err != nil {
-				panic(fmt.Sprintf("govalid model registration error (%s.%s `%s`): %s", m.name, field.Name, c, err.Error()))
+				return 0, false, fmt.Errorf("govalid model registration error (%s.%s `%s`): %w", m.name, field.Name, c, err)
 			}
-			return f, true
+			return f, true, nil
 		}
 	}
-	return 0, false
+	return 0, false, nil
 }
 
 func (m *model) getStringFromTag(tag string, key string) (string, bool) {
