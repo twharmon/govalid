@@ -165,7 +165,7 @@ func BenchmarkValidatorViolationStringReqValid(b *testing.B) {
 	}
 }
 
-func BenchmarkValidatorViolationsInValid(b *testing.B) {
+func BenchmarkValidatorViolationsVariety(b *testing.B) {
 	v := govalid.New()
 	type User struct {
 		Name string `govalid:"req|min:2|max:32|regex:[a-z]+"`
