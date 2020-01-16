@@ -32,7 +32,7 @@ func (v *Validator) Register(structs ...interface{}) error {
 //
 // NOTE: This is not thread safe. You must
 // add cusrom validation functions before validating.
-func (v *Validator) AddCustom(s interface{}, f ...func(interface{}) error) error {
+func (v *Validator) AddCustom(s interface{}, f ...func(interface{}) string) error {
 	t := reflect.TypeOf(s)
 	for t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -46,47 +46,47 @@ func (v *Validator) AddCustom(s interface{}, f ...func(interface{}) error) error
 	return nil
 }
 
-// Error checks the struct s against all constraints and custom
+// Violation checks the struct s against all constraints and custom
 // validation functions, if any. It returns an error if the struct
 // fails validation. If the type being validated is not a struct,
 // ErrNotPtrToStruct will be returned. If the type being validated
 // has not yet been registered, ErrNotRegistered is returned.
-func (v *Validator) Error(s interface{}) error {
+func (v *Validator) Violation(s interface{}) (string, error) {
 	t := reflect.TypeOf(s)
 	if t.Kind() != reflect.Ptr {
-		return ErrNotPtrToStruct
+		return "", ErrNotPtrToStruct
 	}
 	t = t.Elem()
 	if t.Kind() != reflect.Struct {
-		return ErrNotPtrToStruct
+		return "", ErrNotPtrToStruct
 	}
 	m := v.modelStore[t.Name()]
 	if m == nil {
-		return ErrNotRegistered
+		return "", ErrNotRegistered
 	}
-	return m.error(s)
+	return m.violation(s), nil
 }
 
-// Errors checks the struct s against all constraints and custom
+// Violations checks the struct s against all constraints and custom
 // validation functions, if any. It returns a slice of errors if the
 // struct fails validation. If the type being validated is not a
 // struct, ErrNotPtrToStruct alone will be returned. If the type
 // being validated has not yet been registered, ErrNotRegistered
 // alone is returned.
-func (v *Validator) Errors(s interface{}) []error {
+func (v *Validator) Violations(s interface{}) ([]string, error) {
 	t := reflect.TypeOf(s)
 	if t.Kind() != reflect.Ptr {
-		return []error{ErrNotPtrToStruct}
+		return nil, ErrNotPtrToStruct
 	}
 	t = t.Elem()
 	if t.Kind() != reflect.Struct {
-		return []error{ErrNotPtrToStruct}
+		return nil, ErrNotPtrToStruct
 	}
 	m := v.modelStore[t.Name()]
 	if m == nil {
-		return []error{ErrNotRegistered}
+		return nil, ErrNotRegistered
 	}
-	return m.errors(s)
+	return m.violations(s), nil
 }
 
 func (v *Validator) register(s interface{}) error {

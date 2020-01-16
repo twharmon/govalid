@@ -13,39 +13,39 @@ const tagKey = "govalid"
 type model struct {
 	name        string
 	constraints []constraint
-	custom      []func(interface{}) error
+	custom      []func(interface{}) string
 }
 
-func (m *model) error(s interface{}) error {
+func (m *model) violation(s interface{}) string {
 	val := reflect.ValueOf(s)
 	for val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
 	for i, c := range m.constraints {
-		if err := c.error(val.Field(i)); err != nil {
-			return err
+		if v := c.violation(val.Field(i)); v != "" {
+			return v
 		}
 	}
 	for _, v := range m.custom {
-		if err := v(s); err != nil {
-			return err
+		if msg := v(s); msg != "" {
+			return msg
 		}
 	}
-	return nil
+	return ""
 }
 
-func (m *model) errors(s interface{}) []error {
-	var vs []error
+func (m *model) violations(s interface{}) []string {
+	var vs []string
 	val := reflect.ValueOf(s)
 	for val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
 	for i, c := range m.constraints {
-		vs = append(vs, c.errors(val.Field(i))...)
+		vs = append(vs, c.violations(val.Field(i))...)
 	}
 	for _, v := range m.custom {
-		if err := v(s); err != nil {
-			vs = append(vs, err)
+		if msg := v(s); msg != "" {
+			vs = append(vs, msg)
 		}
 	}
 	return vs
