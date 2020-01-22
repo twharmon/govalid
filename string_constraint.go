@@ -44,16 +44,7 @@ func (sc *stringConstraint) violation(val reflect.Value) string {
 	if sc.regex != nil && !sc.regex.MatchString(s) {
 		return fmt.Sprintf("%s must match regex /%s/", sc.field, sc.regex.String())
 	}
-	if len(sc.in) > 0 {
-		for _, opt := range sc.in {
-			if s == opt {
-				return ""
-			}
-		}
-	} else {
-		return ""
-	}
-	return fmt.Sprintf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", "))
+	return sc.getInViolation(s)
 }
 
 func (sc *stringConstraint) violations(val reflect.Value) []string {
@@ -82,14 +73,20 @@ func (sc *stringConstraint) violations(val reflect.Value) []string {
 	if sc.regex != nil && !sc.regex.MatchString(s) {
 		vs = append(vs, fmt.Sprintf("%s must match regex /%s/", sc.field, sc.regex.String()))
 	}
+	if v := sc.getInViolation(s); v != "" {
+		vs = append(vs, v)
+	}
+	return append(vs, fmt.Sprintf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", ")))
+}
+
+func (sc *stringConstraint) getInViolation(s string) string {
 	if len(sc.in) > 0 {
 		for _, opt := range sc.in {
 			if s == opt {
-				return vs
+				return ""
 			}
 		}
-	} else {
-		return vs
+		return fmt.Sprintf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", "))
 	}
-	return append(vs, fmt.Sprintf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", ")))
+	return ""
 }

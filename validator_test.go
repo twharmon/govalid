@@ -17,6 +17,15 @@ func TestValidatorNotRegistered(t *testing.T) {
 	equals(t, err, govalid.ErrNotRegistered)
 }
 
+func TestValidatorCustomNotRegistered(t *testing.T) {
+	v := govalid.New()
+	type Foo struct{}
+	err := v.AddCustom(Foo{}, func(v interface{}) string {
+		return ""
+	})
+	notEqual(t, err, nil)
+}
+
 func TestValidatorNotPtr(t *testing.T) {
 	v := govalid.New()
 	type Foo struct{}
@@ -41,6 +50,22 @@ func TestValidatorRegisterNotStruct(t *testing.T) {
 	notEqual(t, v.Register(m), nil)
 }
 
+func TestValidatorRegisterPointer(t *testing.T) {
+	v := govalid.New()
+	type T struct{}
+	notEqual(t, v.Register(&T{}), nil)
+}
+
+func TestValidatorRegisterNilConstraint(t *testing.T) {
+	v := govalid.New()
+	type T struct {
+		A struct{}
+		b string
+		M map[string]string
+	}
+	notEqual(t, v.Register(T{}), nil)
+}
+
 func TestValidatorCustomValid(t *testing.T) {
 	v := govalid.New()
 	type Foo struct {
@@ -48,6 +73,27 @@ func TestValidatorCustomValid(t *testing.T) {
 	}
 	check(t, v.Register(Foo{}))
 	check(t, v.AddCustom(Foo{}, func(v interface{}) string {
+		if v.(*Foo).Bar == "bar" {
+			return "Bar must not be bar"
+		}
+		return ""
+	}))
+	foo := Foo{"foo"}
+	vio, err := v.Violation(&foo)
+	check(t, err)
+	equals(t, vio, "")
+	vios, err := v.Violations(&foo)
+	check(t, err)
+	equals(t, len(vios), 0)
+}
+
+func TestValidatorCustomPtrValid(t *testing.T) {
+	v := govalid.New()
+	type Foo struct {
+		Bar string `govalid:"req"`
+	}
+	check(t, v.Register(Foo{}))
+	check(t, v.AddCustom(&Foo{}, func(v interface{}) string {
 		if v.(*Foo).Bar == "bar" {
 			return "Bar must not be bar"
 		}
@@ -829,6 +875,14 @@ func TestValidatorStringInvalidMaxTag(t *testing.T) {
 	notEqual(t, v.Register(Foo{}), nil)
 }
 
+func TestValidatorNullStringInvalidMaxTag(t *testing.T) {
+	v := govalid.New()
+	type Foo struct {
+		Bar sql.NullString `govalid:"max:10.5"`
+	}
+	notEqual(t, v.Register(Foo{}), nil)
+}
+
 func TestValidatorFloat32InvalidMaxTag(t *testing.T) {
 	v := govalid.New()
 	type Foo struct {
@@ -845,6 +899,14 @@ func TestValidatorFloat64InvalidMaxTag(t *testing.T) {
 	notEqual(t, v.Register(Foo{}), nil)
 }
 
+func TestValidatorNullFloat64InvalidMaxTag(t *testing.T) {
+	v := govalid.New()
+	type Foo struct {
+		Bar sql.NullFloat64 `govalid:"max:foo"`
+	}
+	notEqual(t, v.Register(Foo{}), nil)
+}
+
 func TestValidatorIntInvalidMaxTag(t *testing.T) {
 	v := govalid.New()
 	type Foo struct {
@@ -857,6 +919,14 @@ func TestValidatorInt64InvalidMaxTag(t *testing.T) {
 	v := govalid.New()
 	type Foo struct {
 		Bar int64 `govalid:"max:foo"`
+	}
+	notEqual(t, v.Register(Foo{}), nil)
+}
+
+func TestValidatorNullInt64InvalidMaxTag(t *testing.T) {
+	v := govalid.New()
+	type Foo struct {
+		Bar sql.NullInt64 `govalid:"max:foo"`
 	}
 	notEqual(t, v.Register(Foo{}), nil)
 }
