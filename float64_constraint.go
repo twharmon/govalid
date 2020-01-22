@@ -15,7 +15,7 @@ type float64Constraint struct {
 }
 
 func (f64c *float64Constraint) violation(val reflect.Value) string {
-	empty := true
+	var empty bool
 	f64, ok := val.Interface().(float64)
 	if !ok && val.FieldByName("Valid").Interface().(bool) {
 		f64 = val.FieldByName("Float64").Interface().(float64)
@@ -40,7 +40,7 @@ func (f64c *float64Constraint) violation(val reflect.Value) string {
 
 func (f64c *float64Constraint) violations(val reflect.Value) []string {
 	var vs []string
-	empty := true
+	var empty bool
 	f64, ok := val.Interface().(float64)
 	if !ok && val.FieldByName("Valid").Interface().(bool) {
 		f64 = val.FieldByName("Float64").Interface().(float64)

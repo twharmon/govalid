@@ -18,7 +18,7 @@ type int64Constraint struct {
 }
 
 func (i64c *int64Constraint) violation(val reflect.Value) string {
-	empty := true
+	var empty bool
 	i64, ok := val.Interface().(int64)
 	if !ok && val.FieldByName("Valid").Interface().(bool) {
 		i64 = val.FieldByName("Int64").Interface().(int64)
@@ -56,7 +56,7 @@ func (i64c *int64Constraint) violation(val reflect.Value) string {
 
 func (i64c *int64Constraint) violations(val reflect.Value) []string {
 	var vs []string
-	empty := true
+	var empty bool
 	i64, ok := val.Interface().(int64)
 	if !ok && val.FieldByName("Valid").Interface().(bool) {
 		i64 = val.FieldByName("Int64").Interface().(int64)

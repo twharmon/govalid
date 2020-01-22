@@ -20,7 +20,7 @@ type stringConstraint struct {
 }
 
 func (sc *stringConstraint) violation(val reflect.Value) string {
-	empty := true
+	var empty bool
 	s, ok := val.Interface().(string)
 	if !ok && val.FieldByName("Valid").Interface().(bool) {
 		s = val.FieldByName("String").Interface().(string)
@@ -58,7 +58,7 @@ func (sc *stringConstraint) violation(val reflect.Value) string {
 
 func (sc *stringConstraint) violations(val reflect.Value) []string {
 	var vs []string
-	empty := true
+	var empty bool
 	s, ok := val.Interface().(string)
 	if !ok && val.FieldByName("Valid").Interface().(bool) {
 		s = val.FieldByName("String").Interface().(string)
