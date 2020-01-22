@@ -53,7 +53,7 @@ func TestValidatorRegisterNotStruct(t *testing.T) {
 func TestValidatorRegisterPointer(t *testing.T) {
 	v := govalid.New()
 	type T struct{}
-	notEqual(t, v.Register(&T{}), nil)
+	equals(t, v.Register(&T{}), nil)
 }
 
 func TestValidatorRegisterNilConstraint(t *testing.T) {
@@ -63,7 +63,7 @@ func TestValidatorRegisterNilConstraint(t *testing.T) {
 		b string
 		M map[string]string
 	}
-	notEqual(t, v.Register(T{}), nil)
+	equals(t, v.Register(T{}), nil)
 }
 
 func TestValidatorCustomValid(t *testing.T) {

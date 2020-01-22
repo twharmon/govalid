@@ -76,7 +76,7 @@ func (sc *stringConstraint) violations(val reflect.Value) []string {
 	if v := sc.getInViolation(s); v != "" {
 		vs = append(vs, v)
 	}
-	return append(vs, fmt.Sprintf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", ")))
+	return vs
 }
 
 func (sc *stringConstraint) getInViolation(s string) string {

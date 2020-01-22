@@ -129,7 +129,9 @@ func (v *Validator) register(s interface{}) error {
 	m := new(model)
 	m.name = name
 	for i := 0; i < typ.NumField(); i++ {
-		v.registerField(m, typ.Field(i))
+		if err := v.registerField(m, typ.Field(i)); err != nil {
+			return err
+		}
 	}
 	return v.addModelToRegistry(m, name)
 }
