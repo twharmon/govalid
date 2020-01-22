@@ -83,6 +83,40 @@ func (v *Validator) Violations(s interface{}) ([]string, error) {
 	return m.violations(s), nil
 }
 
+func (v *Validator) registerField(m *model, field reflect.StructField) error {
+	firstLetter := string(field.Name[0])
+	if firstLetter != strings.ToUpper(firstLetter) {
+		m.registerNilConstraint()
+		return nil
+	}
+	var err error
+	switch field.Type.Kind() {
+	case reflect.String:
+		err = m.registerStringConstraint(field)
+	case reflect.Int:
+		err = m.registerIntConstraint(field)
+	case reflect.Int64:
+		err = m.registerInt64Constraint(field)
+	case reflect.Float32:
+		err = m.registerFloat32Constraint(field)
+	case reflect.Float64:
+		err = m.registerFloat64Constraint(field)
+	case reflect.Struct:
+		if _, ok := field.Type.FieldByName("String"); ok {
+			err = m.registerStringConstraint(field)
+		} else if _, ok := field.Type.FieldByName("Int64"); ok {
+			err = m.registerInt64Constraint(field)
+		} else if _, ok := field.Type.FieldByName("Float64"); ok {
+			err = m.registerFloat64Constraint(field)
+		} else {
+			m.registerNilConstraint()
+		}
+	default:
+		m.registerNilConstraint()
+	}
+	return err
+}
+
 func (v *Validator) register(s interface{}) error {
 	typ := reflect.TypeOf(s)
 	for typ.Kind() == reflect.Ptr {
@@ -95,51 +129,8 @@ func (v *Validator) register(s interface{}) error {
 	m := new(model)
 	m.name = name
 	for i := 0; i < typ.NumField(); i++ {
-		field := typ.Field(i)
-		firstLetter := string(field.Name[0])
-		if firstLetter != strings.ToUpper(firstLetter) {
-			m.registerNilConstraint()
-			continue
-		}
-		switch field.Type.Kind() {
-		case reflect.String:
-			if err := m.registerStringConstraint(field); err != nil {
-				return err
-			}
-		case reflect.Int:
-			if err := m.registerIntConstraint(field); err != nil {
-				return err
-			}
-		case reflect.Int64:
-			if err := m.registerInt64Constraint(field); err != nil {
-				return err
-			}
-		case reflect.Float32:
-			if err := m.registerFloat32Constraint(field); err != nil {
-				return err
-			}
-		case reflect.Float64:
-			if err := m.registerFloat64Constraint(field); err != nil {
-				return err
-			}
-		case reflect.Struct:
-			if _, ok := field.Type.FieldByName("String"); ok {
-				if err := m.registerStringConstraint(field); err != nil {
-					return err
-				}
-			} else if _, ok := field.Type.FieldByName("Int64"); ok {
-				if err := m.registerInt64Constraint(field); err != nil {
-					return err
-				}
-			} else if _, ok := field.Type.FieldByName("Float64"); ok {
-				if err := m.registerFloat64Constraint(field); err != nil {
-					return err
-				}
-			} else {
-				m.registerNilConstraint()
-			}
-		default:
-			m.registerNilConstraint()
+		if err := v.registerField(m, typ.Field(i)); err != nil {
+			return err
 		}
 	}
 	return v.addModelToRegistry(m, name)
