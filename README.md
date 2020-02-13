@@ -7,6 +7,35 @@ Use Govalid to validate structs.
 ## Documentation
 For full documentation see [godoc](https://godoc.org/github.com/twharmon/govalid).
 
+## Example
+```
+package main
+
+import (
+	"fmt"
+
+	"github.com/twharmon/govalid"
+)
+
+type Post struct {
+	ID    int
+	Title string `govalid:"req|min:3|max:20"`
+	Body  string `govalid:"max:10000"`
+}
+
+func main() {
+	v := govalid.New()
+	v.Register(Post{})
+	p := Post{
+		ID:    5,
+		Title: "Hi",
+		Body:  "World",
+	}
+	vio, _ := v.Violation(&p)
+	fmt.Println(vio)
+}
+```
+
 ## Benchmarks
 ```
 BenchmarkValidatorViolationStringReqInvalid-4   	 5856351	       202 ns/op	      48 B/op	       3 allocs/op
