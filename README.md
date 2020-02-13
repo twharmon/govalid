@@ -18,9 +18,10 @@ import (
 )
 
 type Post struct {
-	ID    int
-	Title string `govalid:"req|min:3|max:20"`
-	Body  string `govalid:"max:10000"`
+	ID       int
+	Title    string `govalid:"req|min:3|max:20|regex:^[a-zA-Z-]$"`
+	Body     string `govalid:"max:10000"`
+	Category string `govalid:"in:announcement,bookreview"`
 }
 
 func main() {
@@ -30,8 +31,9 @@ func main() {
 		ID:    5,
 		Title: "Hi",
 		Body:  "World",
+		Category: "announcement",
 	}
-	vio, _ := v.Violation(&p)
+	vio, _ := v.Violations(&p)
 	fmt.Println(vio)
 }
 ```
