@@ -5,10 +5,12 @@
 Use Govalid to validate structs.
 
 ## Documentation
+
 For full documentation see [godoc](https://godoc.org/github.com/twharmon/govalid).
 
 ## Example
-```
+
+```go
 package main
 
 import (
@@ -39,6 +41,7 @@ func main() {
 ```
 
 ## Benchmarks
+
 ```
 BenchmarkValidatorViolationStringReqInvalid-4   	 5856351	       202 ns/op	      48 B/op	       3 allocs/op
 BenchmarkValidatorViolationStringReqValid-4     	13598485	        88.9 ns/op	      16 B/op	       1 allocs/op
@@ -46,4 +49,5 @@ BenchmarkValidatorViolationsVariety-4           	 1000000	      1022 ns/op	     
 ```
 
 ## Contribute
+
 Make a pull request.
