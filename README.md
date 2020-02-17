@@ -32,7 +32,7 @@ type Post struct {
 	// Body is not required, and cannot be more than 10000 charachers.
 	Body string `govalid:"max:10000"`
 
-	// Category is not required, but if not zero value (`""`) it must be
+	// Category is not required, but if not zero value ("") it must be
 	// either "announcement" or "bookreview".
 	Category string `govalid:"in:announcement,bookreview"`
 }
