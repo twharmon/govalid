@@ -26,7 +26,7 @@ type Post struct {
 	ID int
 
 	// Title is required, must be at least 3 characters long, cannot be
-	// more than 20 characters long, and must match ^[a-zA-Z ]$
+	// more than 20 characters long, and must match ^[a-zA-Z ]+$
 	Title string `govalid:"req|min:3|max:20|regex:^[a-zA-Z ]+$"`
 
 	// Body is not required, and cannot be more than 10000 charachers.
