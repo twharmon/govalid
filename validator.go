@@ -41,18 +41,17 @@ func (v *Validator) AddCustom(s interface{}, f ...func(interface{}) string) erro
 }
 
 // Violation checks the struct s against all constraints and custom
-// validation functions, if any. It returns an error if the struct
-// fails validation. If the type being validated is not a struct,
-// ErrNotPtrToStruct will be returned. If the type being validated
+// validation functions, if any. It returns an violation if the
+// struct fails validation. If the type being validated is not a
+// struct, ErrNotStruct will be returned. If the type being validated
 // has not yet been registered, ErrNotRegistered is returned.
 func (v *Validator) Violation(s interface{}) (string, error) {
 	t := reflect.TypeOf(s)
-	if t.Kind() != reflect.Ptr {
-		return "", ErrNotPtrToStruct
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
 	}
-	t = t.Elem()
 	if t.Kind() != reflect.Struct {
-		return "", ErrNotPtrToStruct
+		return "", ErrNotStruct
 	}
 	m := v.modelStore[t.Name()]
 	if m == nil {
@@ -62,19 +61,17 @@ func (v *Validator) Violation(s interface{}) (string, error) {
 }
 
 // Violations checks the struct s against all constraints and custom
-// validation functions, if any. It returns a slice of errors if the
-// struct fails validation. If the type being validated is not a
-// struct, ErrNotPtrToStruct alone will be returned. If the type
-// being validated has not yet been registered, ErrNotRegistered
-// alone is returned.
+// validation functions, if any. It returns a slice of violations if
+// the struct fails validation. If the type being validated is not a
+// struct, ErrNotStruct will be returned. If the type being validated
+// has not yet been registered, ErrNotRegistered is returned.
 func (v *Validator) Violations(s interface{}) ([]string, error) {
 	t := reflect.TypeOf(s)
-	if t.Kind() != reflect.Ptr {
-		return nil, ErrNotPtrToStruct
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
 	}
-	t = t.Elem()
 	if t.Kind() != reflect.Struct {
-		return nil, ErrNotPtrToStruct
+		return nil, ErrNotStruct
 	}
 	m := v.modelStore[t.Name()]
 	if m == nil {
