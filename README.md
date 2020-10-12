@@ -1,12 +1,12 @@
 # Govalid
 
-![](https://github.com/twharmon/govalid/workflows/Test/badge.svg) [![](https://goreportcard.com/badge/github.com/twharmon/govalid)](https://goreportcard.com/report/github.com/twharmon/govalid) [![](https://gocover.io/_badge/github.com/twharmon/govalid)](https://gocover.io/github.com/twharmon/govalid) [![GoDoc](https://godoc.org/github.com/twharmon/govalid?status.svg)](https://godoc.org/github.com/twharmon/govalid)
+![](https://github.com/twharmon/govalid/workflows/Test/badge.svg) [![](https://goreportcard.com/badge/github.com/twharmon/govalid)](https://goreportcard.com/report/github.com/twharmon/govalid) [![](https://gocover.io/_badge/github.com/twharmon/govalid)](https://gocover.io/github.com/twharmon/govalid) [![pkg.go.dev](https://pkg.go.dev/github.com/twharmon/govalid)](https://pkg.go.dev/github.com/twharmon/govalid)
 
 Use Govalid to validate structs.
 
 ## Documentation
 
-For full documentation see [godoc](https://godoc.org/github.com/twharmon/govalid).
+For full documentation see [pkg.go.dev](https://pkg.go.dev/github.com/twharmon/govalid).
 
 ## Example
 
@@ -70,9 +70,9 @@ func main() {
 ## Benchmarks
 
 ```
-BenchmarkValidatorViolationStringReqInvalid-4   	 5856351	       202 ns/op	      48 B/op	       3 allocs/op
-BenchmarkValidatorViolationStringReqValid-4     	13598485	        88.9 ns/op	      16 B/op	       1 allocs/op
-BenchmarkValidatorViolationsVariety-4           	 1000000	      1022 ns/op	     289 B/op	      14 allocs/op
+BenchmarkValidatorStringReqInvalid	         192 ns/op	      48 B/op	       3 allocs/op
+BenchmarkValidatorStringReqValid	        98.5 ns/op	      16 B/op	       1 allocs/op
+BenchmarkValidatorsVariety	                1114 ns/op	     281 B/op	      13 allocs/op
 ```
 
 ## Contribute
