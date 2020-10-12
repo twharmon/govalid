@@ -26,22 +26,13 @@ func TestValidatorCustomNotRegistered(t *testing.T) {
 	notEqual(t, err, nil)
 }
 
-func TestValidatorNotPtr(t *testing.T) {
-	v := govalid.New()
-	type Foo struct{}
-	_, err := v.Violation(Foo{})
-	equals(t, err, govalid.ErrNotPtrToStruct)
-	_, err = v.Violations(Foo{})
-	equals(t, err, govalid.ErrNotPtrToStruct)
-}
-
 func TestValidatorNotStruct(t *testing.T) {
 	v := govalid.New()
 	m := make(map[string]string)
 	_, err := v.Violation(&m)
-	equals(t, err, govalid.ErrNotPtrToStruct)
+	equals(t, err, govalid.ErrNotStruct)
 	_, err = v.Violations(&m)
-	equals(t, err, govalid.ErrNotPtrToStruct)
+	equals(t, err, govalid.ErrNotStruct)
 }
 
 func TestValidatorRegisterNotStruct(t *testing.T) {
