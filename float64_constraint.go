@@ -6,12 +6,13 @@ import (
 )
 
 type float64Constraint struct {
-	field    string
-	req      bool
-	isMinSet bool
-	min      float64
-	isMaxSet bool
-	max      float64
+	field       string
+	req         bool
+	isMinSet    bool
+	min         float64
+	isMaxSet    bool
+	max         float64
+	customRules []func(string, float64) string
 }
 
 func (f64c *float64Constraint) violation(val reflect.Value) string {
@@ -34,6 +35,11 @@ func (f64c *float64Constraint) violation(val reflect.Value) string {
 	}
 	if f64c.isMinSet && f64 < f64c.min {
 		return fmt.Sprintf("%s must be at least %f", f64c.field, f64c.min)
+	}
+	for _, f := range f64c.customRules {
+		if vio := f(f64c.field, f64); vio != "" {
+			return vio
+		}
 	}
 	return ""
 }
@@ -59,6 +65,11 @@ func (f64c *float64Constraint) violations(val reflect.Value) []string {
 	}
 	if f64c.isMinSet && f64 < f64c.min {
 		vs = append(vs, fmt.Sprintf("%s must be at least %f", f64c.field, f64c.min))
+	}
+	for _, f := range f64c.customRules {
+		if vio := f(f64c.field, f64); vio != "" {
+			vs = append(vs, vio)
+		}
 	}
 	return vs
 }

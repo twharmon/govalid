@@ -6,13 +6,14 @@ import (
 )
 
 type int64Constraint struct {
-	field    string
-	req      bool
-	isMinSet bool
-	min      int64
-	isMaxSet bool
-	max      int64
-	in       []int64
+	field       string
+	req         bool
+	isMinSet    bool
+	min         int64
+	isMaxSet    bool
+	max         int64
+	in          []int64
+	customRules []func(string, int64) string
 }
 
 func (i64c *int64Constraint) violation(val reflect.Value) string {
@@ -39,7 +40,11 @@ func (i64c *int64Constraint) violation(val reflect.Value) string {
 	if !containsInt64(i64c.in, i64) {
 		return fmt.Sprintf("%s must be in %v", i64c.field, i64c.in)
 	}
-
+	for _, f := range i64c.customRules {
+		if vio := f(i64c.field, i64); vio != "" {
+			return vio
+		}
+	}
 	return ""
 }
 
@@ -68,7 +73,11 @@ func (i64c *int64Constraint) violations(val reflect.Value) []string {
 	if !containsInt64(i64c.in, i64) {
 		vs = append(vs, fmt.Sprintf("%s must be in %v", i64c.field, i64c.in))
 	}
-
+	for _, f := range i64c.customRules {
+		if vio := f(i64c.field, i64); vio != "" {
+			vs = append(vs, vio)
+		}
+	}
 	return vs
 }
 

@@ -9,7 +9,10 @@ import (
 
 // Validator .
 type Validator struct {
-	modelStore map[string]*model
+	modelStore   map[string]*model
+	stringRules  map[string]func(string, string) string
+	int64Rules   map[string]func(string, int64) string
+	float64Rules map[string]func(string, float64) string
 }
 
 // Register is required for all structs that you wish
@@ -38,6 +41,21 @@ func (v *Validator) AddCustom(s interface{}, f ...func(interface{}) string) erro
 	}
 	m.custom = append(m.custom, f...)
 	return nil
+}
+
+// AddCustomStringRule adds custom validation tag for string.
+func (v *Validator) AddCustomStringRule(name string, validatorFunc func(string, string) string) {
+	v.stringRules[name] = validatorFunc
+}
+
+// AddCustomInt64Rule adds custom validation tag for int64.
+func (v *Validator) AddCustomInt64Rule(name string, validatorFunc func(string, int64) string) {
+	v.int64Rules[name] = validatorFunc
+}
+
+// AddCustomFloat64Rule adds custom validation tag for float64.
+func (v *Validator) AddCustomFloat64Rule(name string, validatorFunc func(string, float64) string) {
+	v.float64Rules[name] = validatorFunc
 }
 
 // Violation checks the struct s against all constraints and custom
@@ -89,22 +107,22 @@ func (v *Validator) registerField(m *model, field reflect.StructField) error {
 	var err error
 	switch field.Type.Kind() {
 	case reflect.String:
-		err = m.registerStringConstraint(field)
+		err = m.registerStringConstraint(field, v.stringRules)
 	case reflect.Int:
 		err = m.registerIntConstraint(field)
 	case reflect.Int64:
-		err = m.registerInt64Constraint(field)
+		err = m.registerInt64Constraint(field, v.int64Rules)
 	case reflect.Float32:
 		err = m.registerFloat32Constraint(field)
 	case reflect.Float64:
-		err = m.registerFloat64Constraint(field)
+		err = m.registerFloat64Constraint(field, v.float64Rules)
 	case reflect.Struct:
 		if _, ok := field.Type.FieldByName("String"); ok {
-			err = m.registerStringConstraint(field)
+			err = m.registerStringConstraint(field, v.stringRules)
 		} else if _, ok := field.Type.FieldByName("Int64"); ok {
-			err = m.registerInt64Constraint(field)
+			err = m.registerInt64Constraint(field, v.int64Rules)
 		} else if _, ok := field.Type.FieldByName("Float64"); ok {
-			err = m.registerFloat64Constraint(field)
+			err = m.registerFloat64Constraint(field, v.float64Rules)
 		} else {
 			m.registerNilConstraint()
 		}
