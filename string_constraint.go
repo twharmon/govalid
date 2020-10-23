@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
-	"strings"
 	"unicode/utf8"
 )
 
@@ -86,7 +85,7 @@ func (sc *stringConstraint) getInViolation(s string) string {
 				return ""
 			}
 		}
-		return fmt.Sprintf("%s must be in [%s]", sc.field, strings.Join(sc.in, ", "))
+		return fmt.Sprintf("%s must be in %v", sc.field, sc.in)
 	}
 	return ""
 }
