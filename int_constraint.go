@@ -3,8 +3,6 @@ package govalid
 import (
 	"fmt"
 	"reflect"
-	"strconv"
-	"strings"
 )
 
 type intConstraint struct {
@@ -31,20 +29,11 @@ func (ic *intConstraint) violation(val reflect.Value) string {
 	if ic.isMinSet && i < ic.min {
 		return fmt.Sprintf("%s must be at least %d", ic.field, ic.min)
 	}
-	if len(ic.in) > 0 {
-		for _, opt := range ic.in {
-			if i == opt {
-				return ""
-			}
-		}
-	} else {
-		return ""
+	if !containsInt(ic.in, i) {
+		return fmt.Sprintf("%s must be in %v", ic.field, ic.in)
 	}
-	iStrSlice := []string{}
-	for _, a := range ic.in {
-		iStrSlice = append(iStrSlice, strconv.Itoa(a))
-	}
-	return fmt.Sprintf("%s must be in [%s]", ic.field, strings.Join(iStrSlice, ", "))
+
+	return ""
 }
 
 func (ic *intConstraint) violations(val reflect.Value) []string {
@@ -62,18 +51,22 @@ func (ic *intConstraint) violations(val reflect.Value) []string {
 	if ic.isMinSet && i < ic.min {
 		vs = append(vs, fmt.Sprintf("%s must be at least %d", ic.field, ic.min))
 	}
-	if len(ic.in) > 0 {
-		for _, opt := range ic.in {
-			if i == opt {
-				return vs
-			}
+	if !containsInt(ic.in, i) {
+		vs = append(vs, fmt.Sprintf("%s must be in %v", ic.field, ic.in))
+	}
+
+	return vs
+}
+
+func containsInt(a []int, x int) bool {
+	if len(a) == 0 {
+		return true
+	}
+
+	for _, n := range a {
+		if x == n {
+			return true
 		}
-	} else {
-		return vs
 	}
-	iStrSlice := []string{}
-	for _, a := range ic.in {
-		iStrSlice = append(iStrSlice, strconv.Itoa(a))
-	}
-	return append(vs, fmt.Sprintf("%s must be in [%s]", ic.field, strings.Join(iStrSlice, ", ")))
+	return false
 }
