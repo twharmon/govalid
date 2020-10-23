@@ -3,6 +3,8 @@ package govalid_test
 import (
 	"database/sql"
 	"fmt"
+	"math"
+	"strings"
 	"testing"
 
 	"github.com/twharmon/govalid"
@@ -137,6 +139,133 @@ func TestValidatorNilConstraint(t *testing.T) {
 	vios, err := v.Violations(&foo)
 	check(t, err)
 	equals(t, len(vios), 0)
+}
+
+func TestValidatorStringCustomRuleValid(t *testing.T) {
+	v := govalid.New()
+	v.AddCustomStringRule("email", func(field string, value string) string {
+		if strings.Contains(value, "@") {
+			return ""
+		}
+		return fmt.Sprintf("%s must contain @", field)
+	})
+	type Foo struct {
+		Bar string `govalid:"req|email"`
+	}
+	err := v.Register(Foo{})
+	equals(t, err, nil)
+	vio, err := v.Violation(&Foo{Bar: "baz@example.com"})
+	check(t, err)
+	equals(t, vio, "")
+	vios, err := v.Violations(&Foo{Bar: "baz@example.com"})
+	check(t, err)
+	equals(t, len(vios), 0)
+}
+
+func TestValidatorStringCustomRuleInvalid(t *testing.T) {
+	v := govalid.New()
+	v.AddCustomStringRule("email", func(field string, value string) string {
+		if strings.Contains(value, "@") {
+			return ""
+		}
+		return fmt.Sprintf("%s must contain @", field)
+	})
+	type Foo struct {
+		Bar string `govalid:"req|email"`
+	}
+	err := v.Register(Foo{})
+	equals(t, err, nil)
+	vio, err := v.Violation(&Foo{Bar: "baz"})
+	check(t, err)
+	equals(t, vio, "Bar must contain @")
+	vios, err := v.Violations(&Foo{Bar: "baz"})
+	check(t, err)
+	equals(t, len(vios), 1)
+}
+
+func TestValidatorInt64CustomRuleValid(t *testing.T) {
+	v := govalid.New()
+	v.AddCustomInt64Rule("even", func(field string, value int64) string {
+		if value%2 == 0 {
+			return ""
+		}
+		return fmt.Sprintf("%s must be even", field)
+	})
+	type Foo struct {
+		Bar int64 `govalid:"req|even"`
+	}
+	err := v.Register(Foo{})
+	equals(t, err, nil)
+	vio, err := v.Violation(&Foo{Bar: 4})
+	check(t, err)
+	equals(t, vio, "")
+	vios, err := v.Violations(&Foo{Bar: 4})
+	check(t, err)
+	equals(t, len(vios), 0)
+}
+
+func TestValidatorInt64CustomRuleInvalid(t *testing.T) {
+	v := govalid.New()
+	v.AddCustomInt64Rule("even", func(field string, value int64) string {
+		if value%2 == 0 {
+			return ""
+		}
+		return fmt.Sprintf("%s must be even", field)
+	})
+	type Foo struct {
+		Bar int64 `govalid:"req|even"`
+	}
+	err := v.Register(Foo{})
+	equals(t, err, nil)
+	vio, err := v.Violation(&Foo{Bar: 5})
+	check(t, err)
+	equals(t, vio, "Bar must be even")
+	vios, err := v.Violations(&Foo{Bar: 5})
+	check(t, err)
+	equals(t, len(vios), 1)
+}
+
+func TestValidatorFloat64CustomRuleValid(t *testing.T) {
+	v := govalid.New()
+	v.AddCustomFloat64Rule("near-zero", func(field string, value float64) string {
+		if math.Abs(value) < 1 {
+			return ""
+		}
+		return fmt.Sprintf("%s must be near zero", field)
+	})
+	type Foo struct {
+		Bar float64 `govalid:"req|near-zero"`
+	}
+	err := v.Register(Foo{})
+	equals(t, err, nil)
+	vio, err := v.Violation(&Foo{Bar: 0.1})
+	check(t, err)
+	equals(t, vio, "")
+	vios, err := v.Violations(&Foo{Bar: 0.1})
+	check(t, err)
+	equals(t, len(vios), 0)
+}
+
+func TestValidatorFloat64CustomRuleInvalid(t *testing.T) {
+	v := govalid.New()
+	v.AddCustomFloat64Rule("near-zero", func(field string, value float64) string {
+		t.Log(value, math.Abs(value))
+		if math.Abs(value) < 1 {
+			return ""
+		}
+		return fmt.Sprintf("%s must be near zero", field)
+	})
+	type Foo struct {
+		Bar float64 `govalid:"req|near-zero"`
+	}
+	err := v.Register(Foo{})
+	equals(t, err, nil)
+	vio, err := v.Violation(&Foo{Bar: 5})
+	check(t, err)
+	equals(t, vio, "Bar must be near zero")
+	vios, err := v.Violations(&Foo{Bar: 5})
+	check(t, err)
+	equals(t, len(vios), 1)
 }
 
 func TestValidatorStringInvalidTag(t *testing.T) {

@@ -29,8 +29,9 @@ type Post struct {
 	// more than 20 characters long, and must match ^[a-zA-Z ]+$
 	Title string `govalid:"req|min:3|max:20|regex:^[a-zA-Z ]+$"`
 
-	// Body is not required, and cannot be more than 10000 charachers.
-	Body string `govalid:"max:10000"`
+	// Body is not required, cannot be more than 10000 charachers,
+	// and must be "fun" (a custom rule defined below).
+	Body string `govalid:"max:10000|fun"`
 
 	// Category is not required, but if not zero value ("") it must be
 	// either "announcement" or "bookreview".
@@ -42,7 +43,7 @@ var v = govalid.New()
 func main() {
 	v.Register(Post{}) // Register all structs at load time
 
-	// Add Custom validation to `Post`
+	// Add Custom validation to the struct `Post`
 	v.AddCustom(Post{}, func(val interface{}) string {
 		post := val.(*Post)
 		if post.Category != "" && !strings.Contains(post.Body, post.Category) {
@@ -51,10 +52,19 @@ func main() {
 		return ""
 	})
 
+	// Add custom string "fun" that can be used on any string field
+	// in any struct.
+	v.AddCustomStringRule("fun", func(field string, value string) string {
+		if float64(strings.Count(value, "!")) / float64(utf8.RuneCountInString(value)) > 0.001 {
+			return ""
+		}
+		return fmt.Sprintf("%s must contain more exclamation marks", field)
+	})
+
 	p := Post{
 		ID:       5,
 		Title:    "Hi",
-		Body:     "World",
+		Body:     "Hello world!",
 		Category: "announcement",
 	}
 

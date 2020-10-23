@@ -8,14 +8,15 @@ import (
 )
 
 type stringConstraint struct {
-	field    string
-	req      bool
-	isMinSet bool
-	min      int
-	isMaxSet bool
-	max      int
-	in       []string
-	regex    *regexp.Regexp
+	field       string
+	req         bool
+	isMinSet    bool
+	min         int
+	isMaxSet    bool
+	max         int
+	in          []string
+	customRules []func(string, string) string
+	regex       *regexp.Regexp
 }
 
 func (sc *stringConstraint) violation(val reflect.Value) string {
@@ -43,7 +44,15 @@ func (sc *stringConstraint) violation(val reflect.Value) string {
 	if sc.regex != nil && !sc.regex.MatchString(s) {
 		return fmt.Sprintf("%s must match regex /%s/", sc.field, sc.regex.String())
 	}
-	return sc.getInViolation(s)
+	if vio := sc.getInViolation(s); vio != "" {
+		return vio
+	}
+	for _, f := range sc.customRules {
+		if vio := f(sc.field, s); vio != "" {
+			return vio
+		}
+	}
+	return ""
 }
 
 func (sc *stringConstraint) violations(val reflect.Value) []string {
@@ -74,6 +83,11 @@ func (sc *stringConstraint) violations(val reflect.Value) []string {
 	}
 	if v := sc.getInViolation(s); v != "" {
 		vs = append(vs, v)
+	}
+	for _, f := range sc.customRules {
+		if vio := f(sc.field, s); vio != "" {
+			vs = append(vs, vio)
+		}
 	}
 	return vs
 }

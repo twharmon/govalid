@@ -51,7 +51,7 @@ func (m *model) violations(s interface{}) []string {
 	return vs
 }
 
-func (m *model) registerStringConstraint(field reflect.StructField) error {
+func (m *model) registerStringConstraint(field reflect.StructField, customRules map[string]func(string, string) string) error {
 	c := new(stringConstraint)
 	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
@@ -59,7 +59,11 @@ func (m *model) registerStringConstraint(field reflect.StructField) error {
 		m.registerNilConstraint()
 		return nil
 	}
-	if err := m.getInvalidTagErr(tag, "req", "min", "max", "in", "regex"); err != nil {
+	var allowedRuleNames = []string{"req", "min", "max", "in", "regex"}
+	for rule := range customRules {
+		allowedRuleNames = append(allowedRuleNames, rule)
+	}
+	if err := m.getInvalidTagErr(tag, allowedRuleNames...); err != nil {
 		return err
 	}
 	c.req = m.getBoolFromTag(tag, "req")
@@ -84,6 +88,11 @@ func (m *model) registerStringConstraint(field reflect.StructField) error {
 			return fmt.Errorf("govalid model registration error (%s.%s `regex:%s`): %w", m.name, field.Name, reStr, err)
 		}
 		c.regex = re
+	}
+	for ruleName := range customRules {
+		if m.getBoolFromTag(tag, ruleName) {
+			c.customRules = append(c.customRules, customRules[ruleName])
+		}
 	}
 	m.constraints = append(m.constraints, c)
 	return nil
@@ -126,7 +135,7 @@ func (m *model) registerIntConstraint(field reflect.StructField) error {
 	return nil
 }
 
-func (m *model) registerInt64Constraint(field reflect.StructField) error {
+func (m *model) registerInt64Constraint(field reflect.StructField, customRules map[string]func(string, int64) string) error {
 	c := new(int64Constraint)
 	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
@@ -134,7 +143,11 @@ func (m *model) registerInt64Constraint(field reflect.StructField) error {
 		m.registerNilConstraint()
 		return nil
 	}
-	if err := m.getInvalidTagErr(tag, "req", "min", "max", "in"); err != nil {
+	var allowedRuleNames = []string{"req", "min", "max", "in"}
+	for rule := range customRules {
+		allowedRuleNames = append(allowedRuleNames, rule)
+	}
+	if err := m.getInvalidTagErr(tag, allowedRuleNames...); err != nil {
 		return err
 	}
 	c.req = m.getBoolFromTag(tag, "req")
@@ -159,11 +172,16 @@ func (m *model) registerInt64Constraint(field reflect.StructField) error {
 			c.in = append(c.in, opt)
 		}
 	}
+	for ruleName := range customRules {
+		if m.getBoolFromTag(tag, ruleName) {
+			c.customRules = append(c.customRules, customRules[ruleName])
+		}
+	}
 	m.constraints = append(m.constraints, c)
 	return nil
 }
 
-func (m *model) registerFloat64Constraint(field reflect.StructField) error {
+func (m *model) registerFloat64Constraint(field reflect.StructField, customRules map[string]func(string, float64) string) error {
 	c := new(float64Constraint)
 	c.field = field.Name
 	tag, ok := field.Tag.Lookup(tagKey)
@@ -171,7 +189,11 @@ func (m *model) registerFloat64Constraint(field reflect.StructField) error {
 		m.registerNilConstraint()
 		return nil
 	}
-	if err := m.getInvalidTagErr(tag, "req", "min", "max"); err != nil {
+	var allowedRuleNames = []string{"req", "min", "max"}
+	for rule := range customRules {
+		allowedRuleNames = append(allowedRuleNames, rule)
+	}
+	if err := m.getInvalidTagErr(tag, allowedRuleNames...); err != nil {
 		return err
 	}
 	c.req = m.getBoolFromTag(tag, "req")
@@ -186,6 +208,11 @@ func (m *model) registerFloat64Constraint(field reflect.StructField) error {
 	} else if ok {
 		c.isMinSet = true
 		c.min = min
+	}
+	for ruleName := range customRules {
+		if m.getBoolFromTag(tag, ruleName) {
+			c.customRules = append(c.customRules, customRules[ruleName])
+		}
 	}
 	m.constraints = append(m.constraints, c)
 	return nil
