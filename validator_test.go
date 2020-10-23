@@ -139,6 +139,46 @@ func TestValidatorNilConstraint(t *testing.T) {
 	equals(t, len(vios), 0)
 }
 
+func TestValidatorStringInvalidTag(t *testing.T) {
+	v := govalid.New()
+	type Foo struct {
+		Bar string `govalid:"req|regexp:^[a-z]+$"`
+	}
+	notEqual(t, v.Register(Foo{}), nil)
+}
+
+func TestValidatorIntInvalidTag(t *testing.T) {
+	v := govalid.New()
+	type Foo struct {
+		Bar int `govalid:"required"`
+	}
+	notEqual(t, v.Register(Foo{}), nil)
+}
+
+func TestValidatorInt64InvalidTag(t *testing.T) {
+	v := govalid.New()
+	type Foo struct {
+		Bar int64 `govalid:"required"`
+	}
+	notEqual(t, v.Register(Foo{}), nil)
+}
+
+func TestValidatorFloat32InvalidTag(t *testing.T) {
+	v := govalid.New()
+	type Foo struct {
+		Bar float32 `govalid:"required"`
+	}
+	notEqual(t, v.Register(Foo{}), nil)
+}
+
+func TestValidatorFloat64InvalidTag(t *testing.T) {
+	v := govalid.New()
+	type Foo struct {
+		Bar float64 `govalid:"required"`
+	}
+	notEqual(t, v.Register(Foo{}), nil)
+}
+
 func TestValidatorIntReqValid(t *testing.T) {
 	v := govalid.New()
 	type Foo struct {

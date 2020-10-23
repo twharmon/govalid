@@ -59,6 +59,9 @@ func (m *model) registerStringConstraint(field reflect.StructField) error {
 		m.registerNilConstraint()
 		return nil
 	}
+	if err := m.getInvalidTagErr(tag, "req", "min", "max", "in", "regex"); err != nil {
+		return err
+	}
 	c.req = m.getBoolFromTag(tag, "req")
 	if max, ok, err := m.getIntFromTag(field, tag, "max"); err != nil {
 		return err
@@ -94,6 +97,9 @@ func (m *model) registerIntConstraint(field reflect.StructField) error {
 		m.registerNilConstraint()
 		return nil
 	}
+	if err := m.getInvalidTagErr(tag, "req", "min", "max", "in"); err != nil {
+		return err
+	}
 	c.req = m.getBoolFromTag(tag, "req")
 	if max, ok, err := m.getIntFromTag(field, tag, "max"); err != nil {
 		return err
@@ -127,6 +133,9 @@ func (m *model) registerInt64Constraint(field reflect.StructField) error {
 	if !ok {
 		m.registerNilConstraint()
 		return nil
+	}
+	if err := m.getInvalidTagErr(tag, "req", "min", "max", "in"); err != nil {
+		return err
 	}
 	c.req = m.getBoolFromTag(tag, "req")
 	if max, ok, err := m.getInt64FromTag(field, tag, "max"); err != nil {
@@ -162,6 +171,9 @@ func (m *model) registerFloat64Constraint(field reflect.StructField) error {
 		m.registerNilConstraint()
 		return nil
 	}
+	if err := m.getInvalidTagErr(tag, "req", "min", "max"); err != nil {
+		return err
+	}
 	c.req = m.getBoolFromTag(tag, "req")
 	if max, ok, err := m.getFloat64FromTag(field, tag, "max"); err != nil {
 		return err
@@ -187,6 +199,9 @@ func (m *model) registerFloat32Constraint(field reflect.StructField) error {
 		m.registerNilConstraint()
 		return nil
 	}
+	if err := m.getInvalidTagErr(tag, "req", "min", "max", "in"); err != nil {
+		return err
+	}
 	c.req = m.getBoolFromTag(tag, "req")
 	if max, ok, err := m.getFloat32FromTag(field, tag, "max"); err != nil {
 		return err
@@ -207,6 +222,23 @@ func (m *model) registerFloat32Constraint(field reflect.StructField) error {
 func (m *model) registerNilConstraint() {
 	c := new(nilConstraint)
 	m.constraints = append(m.constraints, c)
+}
+
+func (m *model) getInvalidTagErr(tag string, allowedRuleNames ...string) error {
+	for _, rule := range strings.Split(tag, "|") {
+		ruleName := strings.Split(rule, ":")[0]
+		found := false
+		for _, allowedName := range allowedRuleNames {
+			if ruleName == allowedName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("invalid rule '%s' found in govalid tag on %s", ruleName, m.name)
+		}
+	}
+	return nil
 }
 
 func (m *model) getBoolFromTag(tag string, key string) bool {
