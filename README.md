@@ -41,8 +41,6 @@ type Post struct {
 var v = govalid.New()
 
 func main() {
-	v.Register(Post{}) // Register all structs at load time
-
 	// Add Custom validation to the struct `Post`
 	v.AddCustom(Post{}, func(val interface{}) string {
 		post := val.(*Post)
@@ -51,7 +49,7 @@ func main() {
 		}
 		return ""
 	})
-
+	
 	// Add custom string "fun" that can be used on any string field
 	// in any struct.
 	v.AddCustomStringRule("fun", func(field string, value string) string {
@@ -60,6 +58,8 @@ func main() {
 		}
 		return fmt.Sprintf("%s must contain more exclamation marks", field)
 	})
+	
+	v.Register(Post{}) // Register all structs at load time
 
 	p := Post{
 		ID:       5,
