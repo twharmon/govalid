@@ -15,10 +15,8 @@ type Validator struct {
 	float64Rules map[string]func(string, float64) string
 }
 
-// Register is required for all structs that you wish
-// to validate. It is intended to be ran at load time
-// and caches information about the structs to reduce
-// run time allocations.
+// Deprecated: Register is deprecated. Structs are registered as
+// needed.
 func (v *Validator) Register(structs ...interface{}) error {
 	for _, s := range structs {
 		if err := v.register(s); err != nil {
@@ -37,7 +35,10 @@ func (v *Validator) AddCustom(s interface{}, f ...func(interface{}) string) erro
 	n := t.Name()
 	m := v.modelStore[n]
 	if m == nil {
-		return ErrNotRegistered
+		if err := v.register(s); err != nil {
+			return err
+		}
+		m = v.modelStore[n]
 	}
 	m.custom = append(m.custom, f...)
 	return nil
@@ -61,8 +62,7 @@ func (v *Validator) AddCustomFloat64Rule(name string, validatorFunc func(string,
 // Violation checks the struct s against all constraints and custom
 // validation functions, if any. It returns an violation if the
 // struct fails validation. If the type being validated is not a
-// struct, ErrNotStruct will be returned. If the type being validated
-// has not yet been registered, ErrNotRegistered is returned.
+// struct, ErrNotStruct will be returned.
 func (v *Validator) Violation(s interface{}) (string, error) {
 	t := reflect.TypeOf(s)
 	for t.Kind() == reflect.Ptr {
@@ -73,7 +73,10 @@ func (v *Validator) Violation(s interface{}) (string, error) {
 	}
 	m := v.modelStore[t.Name()]
 	if m == nil {
-		return "", ErrNotRegistered
+		if err := v.register(s); err != nil {
+			return "", err
+		}
+		m = v.modelStore[t.Name()]
 	}
 	return m.violation(s), nil
 }
@@ -81,8 +84,7 @@ func (v *Validator) Violation(s interface{}) (string, error) {
 // Violations checks the struct s against all constraints and custom
 // validation functions, if any. It returns a slice of violations if
 // the struct fails validation. If the type being validated is not a
-// struct, ErrNotStruct will be returned. If the type being validated
-// has not yet been registered, ErrNotRegistered is returned.
+// struct, ErrNotStruct will be returned.
 func (v *Validator) Violations(s interface{}) ([]string, error) {
 	t := reflect.TypeOf(s)
 	for t.Kind() == reflect.Ptr {
@@ -93,7 +95,10 @@ func (v *Validator) Violations(s interface{}) ([]string, error) {
 	}
 	m := v.modelStore[t.Name()]
 	if m == nil {
-		return nil, ErrNotRegistered
+		if err := v.register(s); err != nil {
+			return nil, err
+		}
+		m = v.modelStore[t.Name()]
 	}
 	return m.violations(s), nil
 }

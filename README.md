@@ -58,8 +58,6 @@ func main() {
 		}
 		return fmt.Sprintf("%s must contain more exclamation marks", field)
 	})
-	
-	v.Register(Post{}) // Register all structs at load time
 
 	p := Post{
 		ID:       5,
@@ -80,9 +78,9 @@ func main() {
 ## Benchmarks
 
 ```
-BenchmarkValidatorStringReqInvalid	         192 ns/op	      48 B/op	       3 allocs/op
-BenchmarkValidatorStringReqValid	        98.5 ns/op	      16 B/op	       1 allocs/op
-BenchmarkValidatorsVariety	                1114 ns/op	     281 B/op	      13 allocs/op
+BenchmarkValidatorStringReqInvalid	         267.3 ns/op	  48 B/op	       3 allocs/op
+BenchmarkValidatorStringReqValid	        92.35 ns/op	      16 B/op	       1 allocs/op
+BenchmarkValidatorsVariety	                1484 ns/op	     297 B/op	      15 allocs/op
 ```
 
 ## Contribute
