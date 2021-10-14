@@ -10,24 +10,6 @@ import (
 	"github.com/twharmon/govalid"
 )
 
-func TestValidatorNotRegistered(t *testing.T) {
-	v := govalid.New()
-	type Foo struct{}
-	_, err := v.Violation(&Foo{})
-	equals(t, err, govalid.ErrNotRegistered)
-	_, err = v.Violations(&Foo{})
-	equals(t, err, govalid.ErrNotRegistered)
-}
-
-func TestValidatorCustomNotRegistered(t *testing.T) {
-	v := govalid.New()
-	type Foo struct{}
-	err := v.AddCustom(Foo{}, func(v interface{}) string {
-		return ""
-	})
-	notEqual(t, err, nil)
-}
-
 func TestValidatorNotStruct(t *testing.T) {
 	v := govalid.New()
 	m := make(map[string]string)
@@ -37,34 +19,11 @@ func TestValidatorNotStruct(t *testing.T) {
 	equals(t, err, govalid.ErrNotStruct)
 }
 
-func TestValidatorRegisterNotStruct(t *testing.T) {
-	v := govalid.New()
-	m := make(map[string]string)
-	notEqual(t, v.Register(m), nil)
-}
-
-func TestValidatorRegisterPointer(t *testing.T) {
-	v := govalid.New()
-	type T struct{}
-	equals(t, v.Register(&T{}), nil)
-}
-
-func TestValidatorRegisterNilConstraint(t *testing.T) {
-	v := govalid.New()
-	type T struct {
-		A struct{}
-		b string
-		M map[string]string
-	}
-	equals(t, v.Register(T{}), nil)
-}
-
 func TestValidatorCustomValid(t *testing.T) {
 	v := govalid.New()
 	type Foo struct {
 		Bar string `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	check(t, v.AddCustom(Foo{}, func(v interface{}) string {
 		if v.(*Foo).Bar == "bar" {
 			return "Bar must not be bar"
@@ -85,7 +44,6 @@ func TestValidatorCustomPtrValid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	check(t, v.AddCustom(&Foo{}, func(v interface{}) string {
 		if v.(*Foo).Bar == "bar" {
 			return "Bar must not be bar"
@@ -106,7 +64,6 @@ func TestValidatorCustomInvalid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	check(t, v.AddCustom(Foo{}, func(v interface{}) string {
 		if v.(*Foo).Bar == "foo" {
 			return "Bar must not be foo"
@@ -131,7 +88,6 @@ func TestValidatorNilConstraint(t *testing.T) {
 		F32 float32
 		F64 float64
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -152,8 +108,6 @@ func TestValidatorStringCustomRuleValid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"req|email"`
 	}
-	err := v.Register(Foo{})
-	equals(t, err, nil)
 	vio, err := v.Violation(&Foo{Bar: "baz@example.com"})
 	check(t, err)
 	equals(t, vio, "")
@@ -173,8 +127,6 @@ func TestValidatorStringCustomRuleInvalid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"req|email"`
 	}
-	err := v.Register(Foo{})
-	equals(t, err, nil)
 	vio, err := v.Violation(&Foo{Bar: "baz"})
 	check(t, err)
 	equals(t, vio, "Bar must contain @")
@@ -194,8 +146,6 @@ func TestValidatorInt64CustomRuleValid(t *testing.T) {
 	type Foo struct {
 		Bar int64 `govalid:"req|even"`
 	}
-	err := v.Register(Foo{})
-	equals(t, err, nil)
 	vio, err := v.Violation(&Foo{Bar: 4})
 	check(t, err)
 	equals(t, vio, "")
@@ -215,8 +165,6 @@ func TestValidatorInt64CustomRuleInvalid(t *testing.T) {
 	type Foo struct {
 		Bar int64 `govalid:"req|even"`
 	}
-	err := v.Register(Foo{})
-	equals(t, err, nil)
 	vio, err := v.Violation(&Foo{Bar: 5})
 	check(t, err)
 	equals(t, vio, "Bar must be even")
@@ -236,8 +184,6 @@ func TestValidatorFloat64CustomRuleValid(t *testing.T) {
 	type Foo struct {
 		Bar float64 `govalid:"req|near-zero"`
 	}
-	err := v.Register(Foo{})
-	equals(t, err, nil)
 	vio, err := v.Violation(&Foo{Bar: 0.1})
 	check(t, err)
 	equals(t, vio, "")
@@ -258,8 +204,6 @@ func TestValidatorFloat64CustomRuleInvalid(t *testing.T) {
 	type Foo struct {
 		Bar float64 `govalid:"req|near-zero"`
 	}
-	err := v.Register(Foo{})
-	equals(t, err, nil)
 	vio, err := v.Violation(&Foo{Bar: 5})
 	check(t, err)
 	equals(t, vio, "Bar must be near zero")
@@ -268,52 +212,11 @@ func TestValidatorFloat64CustomRuleInvalid(t *testing.T) {
 	equals(t, len(vios), 1)
 }
 
-func TestValidatorStringInvalidTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar string `govalid:"req|regexp:^[a-z]+$"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorIntInvalidTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar int `govalid:"required"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorInt64InvalidTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar int64 `govalid:"required"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorFloat32InvalidTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar float32 `govalid:"required"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorFloat64InvalidTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar float64 `govalid:"required"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
 func TestValidatorIntReqValid(t *testing.T) {
 	v := govalid.New()
 	type Foo struct {
 		Bar int `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{1}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -328,7 +231,6 @@ func TestValidatorIntReqInvalid(t *testing.T) {
 	type Foo struct {
 		Bar int `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -343,7 +245,6 @@ func TestValidatorIntMinValid(t *testing.T) {
 	type Foo struct {
 		Bar int `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{10}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -358,7 +259,6 @@ func TestValidatorIntMinInvalid(t *testing.T) {
 	type Foo struct {
 		Bar int `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{5}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -373,7 +273,6 @@ func TestValidatorIntMinNotReqValid(t *testing.T) {
 	type Foo struct {
 		Bar int `govalid:"min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -388,7 +287,6 @@ func TestValidatorIntMaxValid(t *testing.T) {
 	type Foo struct {
 		Bar int `govalid:"req|max:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{10}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -403,7 +301,6 @@ func TestValidatorIntMaxInvalid(t *testing.T) {
 	type Foo struct {
 		Bar int `govalid:"req|max:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{11}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -418,7 +315,6 @@ func TestValidatorIntInValid(t *testing.T) {
 	type Foo struct {
 		Bar int `govalid:"req|in:10,20"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{10}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -433,7 +329,6 @@ func TestValidatorIntInInvalid(t *testing.T) {
 	type Foo struct {
 		Bar int `govalid:"req|in:10,20"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{11}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -448,7 +343,6 @@ func TestValidatorInt64ReqValid(t *testing.T) {
 	type Foo struct {
 		Bar int64 `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{1}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -463,7 +357,6 @@ func TestValidatorInt64ReqInvalid(t *testing.T) {
 	type Foo struct {
 		Bar int64 `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -478,7 +371,6 @@ func TestValidatorInt64MinValid(t *testing.T) {
 	type Foo struct {
 		Bar int64 `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{10}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -493,7 +385,6 @@ func TestValidatorInt64MinInvalid(t *testing.T) {
 	type Foo struct {
 		Bar int64 `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{5}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -508,7 +399,6 @@ func TestValidatorInt64MinNotReqValid(t *testing.T) {
 	type Foo struct {
 		Bar int64 `govalid:"min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -523,7 +413,6 @@ func TestValidatorInt64MaxValid(t *testing.T) {
 	type Foo struct {
 		Bar int64 `govalid:"req|max:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{10}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -538,7 +427,6 @@ func TestValidatorInt64MaxInvalid(t *testing.T) {
 	type Foo struct {
 		Bar int64 `govalid:"req|max:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{11}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -553,7 +441,6 @@ func TestValidatorInt64InValid(t *testing.T) {
 	type Foo struct {
 		Bar int64 `govalid:"req|in:10,20"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{10}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -568,7 +455,6 @@ func TestValidatorInt64InInvalid(t *testing.T) {
 	type Foo struct {
 		Bar int64 `govalid:"req|in:10,20"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{11}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -582,7 +468,6 @@ func TestValidatorNullInt64Invalid(t *testing.T) {
 	type Foo struct {
 		Bar sql.NullInt64 `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{sql.NullInt64{Valid: true, Int64: 0}}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -597,7 +482,6 @@ func TestValidatorNullInt64Valid(t *testing.T) {
 	type Foo struct {
 		Bar sql.NullInt64 `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{sql.NullInt64{Valid: true, Int64: 10}}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -612,7 +496,6 @@ func TestValidatorFloat32ReqValid(t *testing.T) {
 	type Foo struct {
 		Bar float32 `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{1}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -627,7 +510,6 @@ func TestValidatorFloat32ReqInvalid(t *testing.T) {
 	type Foo struct {
 		Bar float32 `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -642,7 +524,6 @@ func TestValidatorFloat32MinValid(t *testing.T) {
 	type Foo struct {
 		Bar float32 `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{10}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -657,7 +538,6 @@ func TestValidatorFloat32MinInvalid(t *testing.T) {
 	type Foo struct {
 		Bar float32 `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{5}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -672,7 +552,6 @@ func TestValidatorFloat32MinNotReqValid(t *testing.T) {
 	type Foo struct {
 		Bar float32 `govalid:"min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -687,7 +566,6 @@ func TestValidatorFloat32MaxValid(t *testing.T) {
 	type Foo struct {
 		Bar float32 `govalid:"req|max:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{10}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -702,7 +580,6 @@ func TestValidatorFloat32MaxInvalid(t *testing.T) {
 	type Foo struct {
 		Bar float32 `govalid:"req|max:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{11}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -717,7 +594,6 @@ func TestValidatorFloat64ReqValid(t *testing.T) {
 	type Foo struct {
 		Bar float64 `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{1}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -732,7 +608,6 @@ func TestValidatorFloat64ReqInvalid(t *testing.T) {
 	type Foo struct {
 		Bar float64 `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -747,7 +622,6 @@ func TestValidatorFloat64MinValid(t *testing.T) {
 	type Foo struct {
 		Bar float64 `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{10}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -762,7 +636,6 @@ func TestValidatorFloat64MinInvalid(t *testing.T) {
 	type Foo struct {
 		Bar float64 `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{5}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -777,7 +650,6 @@ func TestValidatorFloat64MinNotReqValid(t *testing.T) {
 	type Foo struct {
 		Bar float64 `govalid:"min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -792,7 +664,6 @@ func TestValidatorFloat64MaxValid(t *testing.T) {
 	type Foo struct {
 		Bar float64 `govalid:"req|max:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{10}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -807,7 +678,6 @@ func TestValidatorFloat64MaxInvalid(t *testing.T) {
 	type Foo struct {
 		Bar float64 `govalid:"req|max:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{11}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -822,7 +692,6 @@ func TestValidatorNullFloat64Invalid(t *testing.T) {
 	type Foo struct {
 		Bar sql.NullFloat64 `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{sql.NullFloat64{Valid: true, Float64: 0}}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -837,7 +706,6 @@ func TestValidatorNullFloat64Valid(t *testing.T) {
 	type Foo struct {
 		Bar sql.NullFloat64 `govalid:"req|min:10"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{sql.NullFloat64{Valid: true, Float64: 10}}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -852,7 +720,6 @@ func TestValidatorStringReqInvalid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -867,7 +734,6 @@ func TestValidatorStringReqValid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"req"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{"foo"}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -882,7 +748,6 @@ func TestValidatorStringRegexInvalid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"regex:^[a-z]+$"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{"Foo"}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -897,7 +762,6 @@ func TestValidatorStringRegexValid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"regex:^[a-z]+$"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{"foo"}
 	vio, err := v.Violation(&Foo{"foo"})
 	check(t, err)
@@ -912,7 +776,6 @@ func TestValidatorStringMinInvalid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"req|min:6"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{"foo"}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -927,7 +790,6 @@ func TestValidatorStringMinValid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"req|min:6"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{"foobarbaz"}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -942,7 +804,6 @@ func TestValidatorStringMinNotReqValid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"min:6"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{""}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -957,7 +818,6 @@ func TestValidatorStringMaxInvalid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"max:6"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{"foobarbaz"}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -972,7 +832,6 @@ func TestValidatorStringMaxValid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"max:6"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{"foo"}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -987,7 +846,6 @@ func TestValidatorStringInValid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"in:foo,bar"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{"foo"}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -1002,7 +860,6 @@ func TestValidatorStringInInvalid(t *testing.T) {
 	type Foo struct {
 		Bar string `govalid:"in:foo,bar"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{"baz"}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -1017,7 +874,6 @@ func TestValidatorNullStringInvalid(t *testing.T) {
 	type Foo struct {
 		Bar sql.NullString `govalid:"in:foo,bar"`
 	}
-	check(t, v.Register(Foo{}))
 	foo := Foo{sql.NullString{Valid: true, String: "baz"}}
 	vio, err := v.Violation(&foo)
 	check(t, err)
@@ -1027,151 +883,11 @@ func TestValidatorNullStringInvalid(t *testing.T) {
 	equals(t, len(vios), 1)
 }
 
-func TestValidatorStringInvalidMaxTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar string `govalid:"max:10.5"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorNullStringInvalidMaxTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar sql.NullString `govalid:"max:10.5"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorFloat32InvalidMaxTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar float32 `govalid:"max:foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorFloat64InvalidMaxTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar float64 `govalid:"max:foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorNullFloat64InvalidMaxTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar sql.NullFloat64 `govalid:"max:foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorIntInvalidMaxTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar int `govalid:"max:foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorInt64InvalidMaxTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar int64 `govalid:"max:foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorNullInt64InvalidMaxTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar sql.NullInt64 `govalid:"max:foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorStringInvalidMinTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar string `govalid:"min:10.5"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorInt64InvalidRegexTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar string `govalid:"regex:^([)][[[[[]$"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorFloat32InvalidMinTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar float32 `govalid:"min:foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorFloat64InvalidMinTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar float64 `govalid:"min:foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorIntInvalidMinTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar int `govalid:"min:foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorInt64InvalidMinTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar int64 `govalid:"min:foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorIntInvalidInTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar int `govalid:"in:5,foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func TestValidatorInt64InvalidInTag(t *testing.T) {
-	v := govalid.New()
-	type Foo struct {
-		Bar int64 `govalid:"in:5,foo"`
-	}
-	notEqual(t, v.Register(Foo{}), nil)
-}
-
-func ExampleValidator() {
-	v := govalid.New()
-	type User struct {
-		Name string `govalid:"req|max:8"`
-	}
-	v.Register(User{})
-	vio, _ := v.Violation(&User{"foobarbaz"})
-	fmt.Println(vio)
-	// Output: Name can not be longer than 8 characters
-}
-
 func BenchmarkValidatorStringReqInvalid(b *testing.B) {
 	v := govalid.New()
 	type User struct {
 		Name string `govalid:"req"`
 	}
-	v.Register(User{})
 	user := User{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -1184,7 +900,6 @@ func BenchmarkValidatorStringReqValid(b *testing.B) {
 	type User struct {
 		Name string `govalid:"req"`
 	}
-	v.Register(User{})
 	user := User{"foo"}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -1199,7 +914,6 @@ func BenchmarkValidatorsVariety(b *testing.B) {
 		Role string `govalid:"req|in:user,editor,admin"`
 		Age  int    `govalid:"req|min:18"`
 	}
-	v.Register(User{})
 	user := User{
 		Name: "foo",
 		Role: "super_admin",
@@ -1209,4 +923,21 @@ func BenchmarkValidatorsVariety(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		v.Violations(&user)
 	}
+}
+
+func ExampleValidator_Violation() {
+	v := govalid.New()
+	type User struct {
+		Name string `govalid:"req|min:2|max:32"`
+		Role string `govalid:"req|in:user,editor,admin"`
+		Age  int    `govalid:"req|min:18"`
+	}
+	user := User{
+		Name: "foo",
+		Role: "super_admin",
+		Age:  10,
+	}
+	vio, _ := v.Violation(&user)
+	fmt.Println(vio)
+	// Output: Role must be in [user editor admin]
 }
