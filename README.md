@@ -78,7 +78,7 @@ func main() {
 ## Benchmarks
 
 ```
-BenchmarkValidatorStringReqInvalid	         267.3 ns/op	  48 B/op	       3 allocs/op
+BenchmarkValidatorStringReqInvalid	        267.3 ns/op	      48 B/op	       3 allocs/op
 BenchmarkValidatorStringReqValid	        92.35 ns/op	      16 B/op	       1 allocs/op
 BenchmarkValidatorsVariety	                1484 ns/op	     297 B/op	      15 allocs/op
 ```
