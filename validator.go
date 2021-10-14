@@ -2,14 +2,15 @@ package govalid
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 )
 
 // Validator .
 type Validator struct {
-	modelStore   map[string]*model
+	store        map[string]*model
+	mu           sync.RWMutex
 	stringRules  map[string]func(string, string) string
 	int64Rules   map[string]func(string, int64) string
 	float64Rules map[string]func(string, float64) string
@@ -33,12 +34,16 @@ func (v *Validator) AddCustom(s interface{}, f ...func(interface{}) string) erro
 		t = t.Elem()
 	}
 	n := t.Name()
-	m := v.modelStore[n]
+	v.mu.RLock()
+	m := v.store[n]
+	v.mu.RUnlock()
 	if m == nil {
 		if err := v.register(s); err != nil {
 			return err
 		}
-		m = v.modelStore[n]
+		v.mu.RLock()
+		m = v.store[n]
+		v.mu.RUnlock()
 	}
 	m.custom = append(m.custom, f...)
 	return nil
@@ -71,12 +76,16 @@ func (v *Validator) Violation(s interface{}) (string, error) {
 	if t.Kind() != reflect.Struct {
 		return "", ErrNotStruct
 	}
-	m := v.modelStore[t.Name()]
+	v.mu.RLock()
+	m := v.store[t.Name()]
+	v.mu.RUnlock()
 	if m == nil {
 		if err := v.register(s); err != nil {
 			return "", err
 		}
-		m = v.modelStore[t.Name()]
+		v.mu.RLock()
+		m = v.store[t.Name()]
+		v.mu.RUnlock()
 	}
 	return m.violation(s), nil
 }
@@ -93,12 +102,16 @@ func (v *Validator) Violations(s interface{}) ([]string, error) {
 	if t.Kind() != reflect.Struct {
 		return nil, ErrNotStruct
 	}
-	m := v.modelStore[t.Name()]
+	v.mu.RLock()
+	m := v.store[t.Name()]
+	v.mu.RUnlock()
 	if m == nil {
 		if err := v.register(s); err != nil {
 			return nil, err
 		}
-		m = v.modelStore[t.Name()]
+		v.mu.RLock()
+		m = v.store[t.Name()]
+		v.mu.RUnlock()
 	}
 	return m.violations(s), nil
 }
@@ -157,9 +170,8 @@ func (v *Validator) register(s interface{}) error {
 }
 
 func (v *Validator) addModelToRegistry(m *model, name string) error {
-	if v.modelStore[name] != nil {
-		return fmt.Errorf("%s is already registered", name)
-	}
-	v.modelStore[name] = m
+	v.mu.Lock()
+	v.store[name] = m
+	v.mu.Unlock()
 	return nil
 }

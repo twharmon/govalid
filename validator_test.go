@@ -924,3 +924,20 @@ func BenchmarkValidatorsVariety(b *testing.B) {
 		v.Violations(&user)
 	}
 }
+
+func ExampleViolation() {
+	v := govalid.New()
+	type User struct {
+		Name string `govalid:"req|min:2|max:32"`
+		Role string `govalid:"req|in:user,editor,admin"`
+		Age  int    `govalid:"req|min:18"`
+	}
+	user := User{
+		Name: "foo",
+		Role: "super_admin",
+		Age:  10,
+	}
+	vio, _ := v.Violation(&user)
+	fmt.Println(vio)
+	// Output: Role must be in [user editor admin]
+}
