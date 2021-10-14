@@ -925,7 +925,7 @@ func BenchmarkValidatorsVariety(b *testing.B) {
 	}
 }
 
-func ExampleViolation() {
+func ExampleValidator_Violation() {
 	v := govalid.New()
 	type User struct {
 		Name string `govalid:"req|min:2|max:32"`
