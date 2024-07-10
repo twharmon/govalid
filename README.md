@@ -14,9 +14,11 @@ For full documentation see [pkg.go.dev](https://pkg.go.dev/github.com/twharmon/g
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/twharmon/govalid"
 )
@@ -25,62 +27,43 @@ type Post struct {
 	// ID has no constraints
 	ID int
 
-	// Title is required, must be at least 3 characters long, cannot be
-	// more than 20 characters long, and must match ^[a-zA-Z ]+$
-	Title string `govalid:"req|min:3|max:20|regex:^[a-zA-Z ]+$"`
+	// Title is required, must be at least 3 characters long, and
+	// cannot be more than 20 characters long
+	Title string `govalid:"req|min:3|max:20"`
 
 	// Body is not required, cannot be more than 10000 charachers,
 	// and must be "fun" (a custom rule defined below).
 	Body string `govalid:"max:10000|fun"`
-
-	// Category is not required, but if not zero value ("") it must be
-	// either "announcement" or "bookreview".
-	Category string `govalid:"in:announcement,bookreview"`
 }
 
-var v = govalid.New()
-
 func main() {
-	// Add Custom validation to the struct `Post`
-	v.AddCustom(Post{}, func(val interface{}) string {
-		post := val.(*Post)
-		if post.Category != "" && !strings.Contains(post.Body, post.Category) {
-			return fmt.Sprintf("Body must contain %s", post.Category)
-		}
-		return ""
-	})
-	
 	// Add custom string "fun" that can be used on any string field
 	// in any struct.
-	v.AddCustomStringRule("fun", func(field string, value string) string {
-		if float64(strings.Count(value, "!")) / float64(utf8.RuneCountInString(value)) > 0.001 {
-			return ""
+	govalid.Rule("fun", func(v any) (string, error) {
+		switch tv := v.(type) {
+		case string:
+			if float64(strings.Count(tv, "!"))/float64(utf8.RuneCountInString(tv)) > 0.001 {
+				return "", nil
+			}
+			return "must contain more exclamation marks", nil
+		default:
+			return "", errors.New("fun constraint must be applied to string only")
 		}
-		return fmt.Sprintf("%s must contain more exclamation marks", field)
 	})
 
 	p := Post{
-		ID:       5,
-		Title:    "Hi",
-		Body:     "Hello world!",
-		Category: "announcement",
+		ID:    5,
+		Title: "Hi",
+		Body:  "Hello world!",
 	}
 
-	vio, err := v.Violations(&p)
+	vio, err := govalid.Validate(&p)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	fmt.Println(vio)
 }
-```
-
-## Benchmarks
-
-```
-BenchmarkValidatorStringReqInvalid	        267.3 ns/op	      48 B/op	       3 allocs/op
-BenchmarkValidatorStringReqValid	        92.35 ns/op	      16 B/op	       1 allocs/op
-BenchmarkValidatorsVariety	                1484 ns/op	     297 B/op	      15 allocs/op
 ```
 
 ## Contribute
