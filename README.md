@@ -29,11 +29,11 @@ type Post struct {
 
 	// Title is required, must be at least 3 characters long, and
 	// cannot be more than 20 characters long
-	Title string `govalid:"req|min:3|max:20"`
+	Title string `valid:"req|min:3|max:20"`
 
 	// Body is not required, cannot be more than 10000 charachers,
 	// and must be "fun" (a custom rule defined below).
-	Body string `govalid:"max:10000|fun"`
+	Body string `valid:"max:10000|fun"`
 }
 
 func main() {
