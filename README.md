@@ -11,8 +11,8 @@ For full documentation see [pkg.go.dev](https://pkg.go.dev/github.com/twharmon/g
 ## Todo
 Document use of `dive`. Rules are now ordered.
 - pointers: dereference and check remaining rules
-- slices / arrays: check each item on remaining rules
-- structs: validates the struct according to its own field tags
+- slices / arrays: check each item with remaining rules
+- structs: validates the struct according to its own field tags (remaining rules have no meaning)
 
 ## Example
 
