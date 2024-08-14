@@ -8,6 +8,12 @@ Use Govalid to validate structs.
 
 For full documentation see [pkg.go.dev](https://pkg.go.dev/github.com/twharmon/govalid).
 
+## Todo
+Document use of `dive`. Rules are now ordered.
+- pointers: dereference and check remaining rules
+- slices / arrays: check each item on remaining rules
+- structs: validates the struct according to its own field tags
+
 ## Example
 
 ```go
