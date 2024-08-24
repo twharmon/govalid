@@ -43,7 +43,7 @@ type Post struct {
 }
 
 func main() {
-	// Add custom string "fun" that can be used on any string field
+	// Add custom string rule "fun" that can be used on any string field
 	// in any struct.
 	govalid.Rule("fun", func(v any) (string, error) {
 		switch tv := v.(type) {
