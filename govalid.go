@@ -1,33 +1,34 @@
 package govalid
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
 )
 
-var customRules = make(map[string]func(v any) (string, error))
+var customRules = make(map[string]func(v any) error)
 
-func Rule(name string, validator func(v any) (string, error)) {
+func Rule(name string, validator func(v any) error) {
 	customRules[name] = validator
 }
 
-func Validate(v any) (string, error) {
+func Validate(v any) error {
 	rv := reflect.ValueOf(v)
 	for rv.Kind() == reflect.Pointer {
 		rv = rv.Elem()
 	}
 	if !rv.IsValid() {
-		return "", fmt.Errorf("can not validate nil")
+		return fmt.Errorf("can not validate nil")
 	}
 	if rv.Kind() != reflect.Struct {
-		return "", fmt.Errorf("can not validate value of kind %s", rv.Kind())
+		return fmt.Errorf("can not validate value of kind %s", rv.Kind())
 	}
 	return validateStruct(rv, nil)
 }
 
-func validate(v reflect.Value, rules []string) (string, error) {
+func validate(v reflect.Value, rules []string) error {
 	switch v.Kind() {
 	case reflect.Float32, reflect.Float64:
 		return validateFloat(v.Float(), rules)
@@ -44,15 +45,13 @@ func validate(v reflect.Value, rules []string) (string, error) {
 	case reflect.Slice, reflect.Array:
 		return validateSlice(v, rules)
 	}
-	return "", nil
+	return nil
 }
 
-func validateStruct(rv reflect.Value, rules []string) (string, error) {
+func validateStruct(rv reflect.Value, rules []string) error {
 	for _, rule := range rules {
-		if vio, err := customRule(rv.Interface(), rule); err != nil {
-			return "", err
-		} else if vio != "" {
-			return vio, nil
+		if err := customRule(rv.Interface(), rule); err != nil {
+			return err
 		}
 	}
 	ty := rv.Type()
@@ -68,256 +67,232 @@ func validateStruct(rv reflect.Value, rules []string) (string, error) {
 		}
 		fv := rv.Field(i)
 		parts := strings.Split(tag, "|")
-		vio, err := validate(fv, parts)
-		if err != nil {
-			return "", fmt.Errorf("field %s: %w", sf.Name, err)
-		}
-		if vio != "" {
-			return fmt.Sprintf("field: %s: %s", sf.Name, vio), nil
+		if err := validate(fv, parts); err != nil {
+			return fmt.Errorf("field %s: %w", sf.Name, err)
 		}
 	}
-	return "", nil
+	return nil
 }
 
-func validatePointer(v reflect.Value, rules []string) (string, error) {
+func validatePointer(v reflect.Value, rules []string) error {
 	req := isReq(rules)
 	if req && v.IsNil() {
-		return "required", nil
+		return errors.New("required")
 	}
 	if !req && v.IsNil() {
-		return "", nil
+		return nil
 	}
 	for i, rule := range rules {
 		if rule == "dive" {
 			if !v.IsZero() && i < len(rules) {
 				return validate(v.Elem(), rules[i+1:])
 			}
-			return "", nil
+			return nil
 		}
-		if vio, err := customRule(v, rule); err != nil {
-			return "", err
-		} else if vio != "" {
-			return vio, nil
+		if err := customRule(v, rule); err != nil {
+			return err
 		}
 	}
-	return "", nil
+	return nil
 }
 
-func validateSlice(v reflect.Value, rules []string) (string, error) {
+func validateSlice(v reflect.Value, rules []string) error {
 	req := isReq(rules)
 	if req && v.IsNil() {
-		return "required", nil
+		return errors.New("required")
 	}
 	if !req && v.IsNil() {
-		return "", nil
+		return nil
 	}
 	for i, rule := range rules {
 		if rule == "dive" {
 			if !v.IsZero() && i < len(rules) {
 				for i := range v.Len() {
-					vio, err := validate(v.Index(i), rules[i+1:])
-					if err != nil {
-						return "", fmt.Errorf("index %d: %w", i, err)
-					}
-					if vio != "" {
-						return fmt.Sprintf("index %d: %s", i, vio), nil
+					if err := validate(v.Index(i), rules[i+1:]); err != nil {
+						return fmt.Errorf("index %d: %w", i, err)
 					}
 				}
 			}
-			return "", nil
+			return nil
 		}
 		max, ok, err := getUintSize(rule, "max")
 		if err != nil {
-			return "", err
+			return err
 		}
 		if ok {
 			if uint64(v.Len()) > max {
-				return fmt.Sprintf("max %d", max), nil
+				return fmt.Errorf("max %d", max)
 			}
 			continue
 		}
 		min, ok, err := getUintSize(rule, "min")
 		if err != nil {
-			return "", err
+			return err
 		}
 		if ok {
 			if uint64(v.Len()) < min {
-				return fmt.Sprintf("min %d", min), nil
+				return fmt.Errorf("min %d", min)
 			}
 			continue
 		}
-		if vio, err := customRule(v, rule); err != nil {
-			return "", err
-		} else if vio != "" {
-			return vio, nil
+		if err := customRule(v, rule); err != nil {
+			return err
 		}
 	}
-	return "", nil
+	return nil
 }
 
-func validateFloat(v float64, rules []string) (string, error) {
+func validateFloat(v float64, rules []string) error {
 	req := isReq(rules)
 	if req && v == 0 {
-		return "required", nil
+		return errors.New("required")
 	}
 	if !req && v == 0 {
-		return "", nil
+		return nil
 	}
 	for _, rule := range rules {
 		max, ok, err := getFloatSize(rule, "max")
 		if err != nil {
-			return "", err
+			return err
 		}
 		if ok {
 			if v > max {
-				return fmt.Sprintf("max %f", max), nil
+				return fmt.Errorf("max %f", max)
 			}
 			continue
 		}
 		min, ok, err := getFloatSize(rule, "min")
 		if err != nil {
-			return "", err
+			return err
 		}
 		if ok {
 			if v < min {
-				return fmt.Sprintf("min %f", min), nil
+				return fmt.Errorf("min %f", min)
 			}
 			continue
 		}
-		if vio, err := customRule(v, rule); err != nil {
-			return "", err
-		} else if vio != "" {
-			return vio, nil
+		if err := customRule(v, rule); err != nil {
+			return err
 		}
 	}
-	return "", nil
+	return nil
 }
 
-func validateInt(v int64, rules []string) (string, error) {
+func validateInt(v int64, rules []string) error {
 	req := isReq(rules)
 	if req && v == 0 {
-		return "required", nil
+		return errors.New("required")
 	}
 	if !req && v == 0 {
-		return "", nil
+		return nil
 	}
 	for _, rule := range rules {
 		max, ok, err := getIntSize(rule, "max")
 		if err != nil {
-			return "", err
+			return err
 		}
 		if ok {
 			if v > max {
-				return fmt.Sprintf("max %d", max), nil
+				return fmt.Errorf("max %d", max)
 			}
 			continue
 		}
 		min, ok, err := getIntSize(rule, "min")
 		if err != nil {
-			return "", err
+			return err
 		}
 		if ok {
 			if v < min {
-				return fmt.Sprintf("min %d", min), nil
+				return fmt.Errorf("min %d", min)
 			}
 			continue
 		}
-		if vio, err := customRule(v, rule); err != nil {
-			return "", err
-		} else if vio != "" {
-			return vio, nil
+		if err := customRule(v, rule); err != nil {
+			return err
 		}
 	}
-	return "", nil
+	return nil
 }
 
-func validateUint(v uint64, rules []string) (string, error) {
+func validateUint(v uint64, rules []string) error {
 	req := isReq(rules)
 	if req && v == 0 {
-		return "required", nil
+		return errors.New("required")
 	}
 	if !req && v == 0 {
-		return "", nil
+		return nil
 	}
 	for _, rule := range rules {
 		max, ok, err := getUintSize(rule, "max")
 		if err != nil {
-			return "", err
+			return err
 		}
 		if ok {
 			if v > max {
-				return fmt.Sprintf("max %d", max), nil
+				return fmt.Errorf("max %d", max)
 			}
 			continue
 		}
 		min, ok, err := getUintSize(rule, "min")
 		if err != nil {
-			return "", err
+			return err
 		}
 		if ok {
 			if v < min {
-				return fmt.Sprintf("min %d", min), nil
+				return fmt.Errorf("min %d", min)
 			}
 			continue
 		}
-		if vio, err := customRule(v, rule); err != nil {
-			return "", err
-		} else if vio != "" {
-			return vio, nil
+		if err := customRule(v, rule); err != nil {
+			return err
 		}
 	}
-	return "", nil
+	return nil
 }
 
-func validateString(v string, rules []string) (string, error) {
+func validateString(v string, rules []string) error {
 	req := isReq(rules)
 	if req && v == "" {
-		return "required", nil
+		return errors.New("required")
 	}
 	if !req && v == "" {
-		return "", nil
+		return nil
 	}
 	for _, rule := range rules {
 		max, ok, err := getUintSize(rule, "max")
 		if err != nil {
-			return "", err
+			return err
 		}
 		if ok {
 			if uint64(len(v)) > max {
-				return fmt.Sprintf("max %d", max), nil
+				return fmt.Errorf("max %d", max)
 			}
 			continue
 		}
 		min, ok, err := getUintSize(rule, "min")
 		if err != nil {
-			return "", err
+			return err
 		}
 		if ok {
 			if uint64(len(v)) < min {
-				return fmt.Sprintf("min %d", min), nil
+				return fmt.Errorf("min %d", min)
 			}
 			continue
 		}
-		if vio, err := customRule(v, rule); err != nil {
-			return "", err
-		} else if vio != "" {
-			return vio, nil
+		if err := customRule(v, rule); err != nil {
+			return err
 		}
 	}
-	return "", nil
+	return nil
 }
 
-func customRule(v any, rule string) (string, error) {
+func customRule(v any, rule string) error {
 	if validator, ok := customRules[rule]; ok {
-		vio, err := validator(v)
-		if err != nil {
-			return "", err
-		}
-		if vio != "" {
-			return vio, nil
+		if err := validator(v); err != nil {
+			return err
 		}
 	}
-	return "", nil
+	return nil
 }
 
 func getIntSize(rule string, ty string) (int64, bool, error) {
