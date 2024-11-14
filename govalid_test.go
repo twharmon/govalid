@@ -268,15 +268,15 @@ func TestValidateFloat(t *testing.T) {
 
 func TestValidateCustomRule(t *testing.T) {
 	alpha := regexp.MustCompile("^[a-zA-Z]+$")
-	govalid.Rule("alpha", func(v any) (string, error) {
+	govalid.Rule("alpha", func(v any) error {
 		switch tv := v.(type) {
 		case string:
 			if !alpha.MatchString(tv) {
-				return "must be letters only", nil
+				return errors.New("must be letters only")
 			}
-			return "", nil
+			return nil
 		default:
-			return "", errors.New("must be used on string")
+			return errors.New("must be used on string")
 		}
 	})
 	type A struct {
@@ -296,19 +296,19 @@ func TestValidateCustomRule(t *testing.T) {
 }
 
 func vioMustInclude(t *testing.T, val any, msgs ...string) {
-	vio, err := govalid.Validate(val)
-	if err != nil {
-		t.Fatalf("expected nil err; found %s", err)
+	err := govalid.Validate(val)
+	if err == nil {
+		t.Fatalf("expected non nil err; found nil")
 	}
 	for _, msg := range msgs {
-		if !strings.Contains(vio, msg) {
-			t.Fatalf("expected vio to include %s; got %s", msg, vio)
+		if !strings.Contains(err.Error(), msg) {
+			t.Fatalf("expected vio to include %s; got %s", msg, err.Error())
 		}
 	}
 }
 
 func errMustInclude(t *testing.T, val any, msgs ...string) {
-	_, err := govalid.Validate(val)
+	err := govalid.Validate(val)
 	if err == nil {
 		t.Fatalf("expected non nil err; found nil")
 	}
@@ -320,12 +320,9 @@ func errMustInclude(t *testing.T, val any, msgs ...string) {
 }
 
 func vioMustBeEmpty(t *testing.T, val any) {
-	vio, err := govalid.Validate(val)
+	err := govalid.Validate(val)
 	if err != nil {
 		t.Fatalf("expected nil err; found %s", err)
-	}
-	if vio != "" {
-		t.Fatalf("expected empty vio; found %s", vio)
 	}
 }
 

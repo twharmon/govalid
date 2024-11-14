@@ -31,27 +31,27 @@ func BenchmarkValidateStringReqValid(b *testing.B) {
 }
 
 func BenchmarkValidateVariety(b *testing.B) {
-	govalid.Rule("role", func(v any) (string, error) {
+	govalid.Rule("role", func(v any) error {
 		switch tv := v.(type) {
 		case string:
 			if tv == "user" || tv == "editor" || tv == "admin" {
-				return "", nil
+				return nil
 			}
-			return "role must be user, editor, or admin", nil
+			return errors.New("role must be user, editor, or admin")
 		default:
-			return "", errors.New("role must be applied to string only")
+			return errors.New("role must be applied to string only")
 		}
 	})
 	nameRegExp := regexp.MustCompile("[a-z]+")
-	govalid.Rule("name", func(v any) (string, error) {
+	govalid.Rule("name", func(v any) error {
 		switch tv := v.(type) {
 		case string:
 			if nameRegExp.MatchString(tv) {
-				return "", nil
+				return nil
 			}
-			return "name alphanumeric", nil
+			return errors.New("name alphanumeric")
 		default:
-			return "", errors.New("name must be applied to string only")
+			return errors.New("name must be applied to string only")
 		}
 	})
 	type User struct {

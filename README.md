@@ -45,30 +45,22 @@ type Post struct {
 func main() {
 	// Add custom string rule "fun" that can be used on any string field
 	// in any struct.
-	govalid.Rule("fun", func(v any) (string, error) {
+	govalid.Rule("fun", func(v any) error {
 		switch tv := v.(type) {
 		case string:
 			if float64(strings.Count(tv, "!"))/float64(utf8.RuneCountInString(tv)) > 0.001 {
-				return "", nil
+				return nil
 			}
-			return "must contain more exclamation marks", nil
+			return errors.New("must contain more exclamation marks")
 		default:
-			return "", errors.New("fun constraint must be applied to string only")
+			return errors.New("fun constraint must be applied to string only")
 		}
 	})
-
-	p := Post{
+	fmt.Println(govalid.Validate(&Post{
 		ID:    5,
 		Title: "Hi",
 		Body:  "Hello world!",
-	}
-
-	vio, err := govalid.Validate(&p)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	fmt.Println(vio)
+	}))
 }
 ```
 
