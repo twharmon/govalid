@@ -20,7 +20,7 @@ func Validate(v any) error {
 		rv = rv.Elem()
 	}
 	if !rv.IsValid() {
-		return fmt.Errorf("can not validate nil")
+		return errors.New("can not validate nil")
 	}
 	if rv.Kind() != reflect.Struct {
 		return fmt.Errorf("can not validate value of kind %s", rv.Kind())

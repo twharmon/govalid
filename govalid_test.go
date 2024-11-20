@@ -14,10 +14,10 @@ func TestValidateArgument(t *testing.T) {
 		A string `valid:"req"`
 	}
 	t.Run("fail: struct", func(t *testing.T) {
-		vioMustInclude(t, A{}, "required", "A")
+		errMustInclude(t, A{}, "required", "A")
 	})
 	t.Run("fail: pointer", func(t *testing.T) {
-		vioMustInclude(t, &A{}, "required", "A")
+		errMustInclude(t, &A{}, "required", "A")
 	})
 	t.Run("fail: map", func(t *testing.T) {
 		errMustInclude(t, map[string]any{}, "of kind")
@@ -32,7 +32,7 @@ func TestValidateUnexported(t *testing.T) {
 		a string
 	}
 	t.Run("ok", func(t *testing.T) {
-		vioMustBeEmpty(t, A{a: ""})
+		errMustBeNil(t, A{a: ""})
 	})
 }
 
@@ -47,37 +47,37 @@ func TestValidateIllegalUse(t *testing.T) {
 
 func TestValidateString(t *testing.T) {
 	t.Run("fail: req", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A string `valid:"req"`
 		}{}, "required", "A")
 	})
 	t.Run("ok: req", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A string `valid:"req"`
 		}{A: "a"})
 	})
 	t.Run("fail: min", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A string `valid:"min:3"`
 		}{A: "ab"}, "min", "3")
 	})
 	t.Run("ok: min", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A string `valid:"min:3"`
 		}{A: "abc"})
 	})
 	t.Run("ok: min not req", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A string `valid:"min:3"`
 		}{})
 	})
 	t.Run("fail: max", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A string `valid:"max:3"`
 		}{A: "abcd"}, "max", "3")
 	})
 	t.Run("ok: max", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A string `valid:"max:3"`
 		}{A: "abc"})
 	})
@@ -85,52 +85,52 @@ func TestValidateString(t *testing.T) {
 
 func TestValidateStringSlice(t *testing.T) {
 	t.Run("fail: req", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A []string `valid:"req"`
 		}{}, "required", "A")
 	})
 	t.Run("ok: req", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A []string `valid:"req"`
 		}{A: []string{}})
 	})
 	t.Run("ok: req|dive|req", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A []string `valid:"req|dive|req"`
 		}{A: []string{"a"}})
 	})
 	t.Run("fail: req|dive|req", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A []string `valid:"req|dive|req"`
 		}{A: []string{"a", ""}}, "required", "A", "index", "1")
 	})
 	t.Run("fail: min:3", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A []string `valid:"min:3"`
 		}{A: []string{"a", "b"}}, "min", "3")
 	})
 	t.Run("ok: min:3", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A []string `valid:"min:3"`
 		}{A: []string{"a", "b", "c"}})
 	})
 	t.Run("fail: max:3", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A []string `valid:"max:3"`
 		}{A: []string{"a", "b", "c", "d"}}, "max", "3")
 	})
 	t.Run("ok: max:3", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A []string `valid:"max:3"`
 		}{A: []string{"a", "b", "c"}})
 	})
 	t.Run("ok: min:3 not req", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A []string `valid:"min:3"`
 		}{})
 	})
 	t.Run("fail: min:3 not req", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A []string `valid:"min:3"`
 		}{A: []string{}}, "min", "3")
 	})
@@ -138,22 +138,22 @@ func TestValidateStringSlice(t *testing.T) {
 
 func TestValidatePointerToStringSlice(t *testing.T) {
 	t.Run("fail: req", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A []*string `valid:"req"`
 		}{}, "required", "A")
 	})
 	t.Run("ok: req", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A []*string `valid:"req"`
 		}{A: []*string{}})
 	})
 	t.Run("ok: req|dive|req|dive|req", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A []*string `valid:"req|dive|req|dive|req"`
 		}{A: []*string{ptr("a")}})
 	})
 	t.Run("fail: req|dive|req|dive|req", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A []*string `valid:"req|dive|req|dive|req"`
 		}{A: []*string{ptr("a"), ptr("")}}, "required", "A", "index", "1")
 	})
@@ -167,34 +167,34 @@ func TestValidateStructSlice(t *testing.T) {
 		As []A `valid:"req|dive"`
 	}
 	t.Run("fail: req", func(t *testing.T) {
-		vioMustInclude(t, B{}, "required", "As")
+		errMustInclude(t, B{}, "required", "As")
 	})
 	t.Run("ok: req", func(t *testing.T) {
-		vioMustBeEmpty(t, B{As: []A{}})
+		errMustBeNil(t, B{As: []A{}})
 	})
 	t.Run("fail: slice items", func(t *testing.T) {
-		vioMustInclude(t, B{As: []A{{}}}, "required", "index", "0", "A")
+		errMustInclude(t, B{As: []A{{}}}, "required", "index", "0", "A")
 	})
 }
 
 func TestValidatePointerToString(t *testing.T) {
 	t.Run("fail: req", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A *string `valid:"req"`
 		}{}, "required", "A")
 	})
 	t.Run("ok: req", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A *string `valid:"req"`
 		}{A: ptr("a")})
 	})
 	t.Run("ok: req|dive|req", func(t *testing.T) {
-		vioMustBeEmpty(t, struct {
+		errMustBeNil(t, struct {
 			A *string `valid:"req|dive|req"`
 		}{A: ptr("a")})
 	})
 	t.Run("fail: req|dive|req", func(t *testing.T) {
-		vioMustInclude(t, struct {
+		errMustInclude(t, struct {
 			A *string `valid:"req|dive|req"`
 		}{A: ptr("")}, "required", "A")
 	})
@@ -205,28 +205,28 @@ func TestValidateInt(t *testing.T) {
 		A int `valid:"req"`
 	}
 	t.Run("fail: required", func(t *testing.T) {
-		vioMustInclude(t, A{}, "required", "A")
+		errMustInclude(t, A{}, "required", "A")
 	})
 	t.Run("ok: required", func(t *testing.T) {
-		vioMustBeEmpty(t, A{A: 1})
+		errMustBeNil(t, A{A: 1})
 	})
 	type B struct {
 		B int `valid:"min:3"`
 	}
 	t.Run("fail: min", func(t *testing.T) {
-		vioMustInclude(t, B{B: 2}, "min", "3")
+		errMustInclude(t, B{B: 2}, "min", "3")
 	})
 	t.Run("ok: min", func(t *testing.T) {
-		vioMustBeEmpty(t, B{B: 3})
+		errMustBeNil(t, B{B: 3})
 	})
 	type C struct {
 		C int `valid:"max:3"`
 	}
 	t.Run("fail: max", func(t *testing.T) {
-		vioMustInclude(t, C{C: 4}, "max", "3")
+		errMustInclude(t, C{C: 4}, "max", "3")
 	})
 	t.Run("ok: max", func(t *testing.T) {
-		vioMustBeEmpty(t, C{C: 3})
+		errMustBeNil(t, C{C: 3})
 	})
 }
 
@@ -235,10 +235,10 @@ func TestValidateUint(t *testing.T) {
 		A uint `valid:"req"`
 	}
 	t.Run("fail: required", func(t *testing.T) {
-		vioMustInclude(t, A{}, "required", "A")
+		errMustInclude(t, A{}, "required", "A")
 	})
 	t.Run("ok: required", func(t *testing.T) {
-		vioMustBeEmpty(t, A{A: 1})
+		errMustBeNil(t, A{A: 1})
 	})
 }
 
@@ -247,22 +247,22 @@ func TestValidateFloat(t *testing.T) {
 		A float64 `valid:"req|min:3|max:5"`
 	}
 	t.Run("fail: required", func(t *testing.T) {
-		vioMustInclude(t, A{}, "required", "A")
+		errMustInclude(t, A{}, "required", "A")
 	})
 	t.Run("ok: required", func(t *testing.T) {
-		vioMustBeEmpty(t, A{A: 4})
+		errMustBeNil(t, A{A: 4})
 	})
 	t.Run("fail: min", func(t *testing.T) {
-		vioMustInclude(t, A{A: 2}, "min", "3")
+		errMustInclude(t, A{A: 2}, "min", "3")
 	})
 	t.Run("ok: min", func(t *testing.T) {
-		vioMustBeEmpty(t, A{A: 3})
+		errMustBeNil(t, A{A: 3})
 	})
 	t.Run("fail: max", func(t *testing.T) {
-		vioMustInclude(t, A{A: 6}, "max", "5")
+		errMustInclude(t, A{A: 6}, "max", "5")
 	})
 	t.Run("ok: max", func(t *testing.T) {
-		vioMustBeEmpty(t, A{A: 3})
+		errMustBeNil(t, A{A: 3})
 	})
 }
 
@@ -288,41 +288,31 @@ func TestValidateCustomRule(t *testing.T) {
 		}{A: 5}, "string")
 	})
 	t.Run("fail: alpha", func(t *testing.T) {
-		vioMustInclude(t, A{A: "5"}, "letters")
+		errMustInclude(t, A{A: "5"}, "letters")
 	})
 	t.Run("ok: alpha", func(t *testing.T) {
-		vioMustBeEmpty(t, A{A: "a"})
+		errMustBeNil(t, A{A: "a"})
 	})
-}
-
-func vioMustInclude(t *testing.T, val any, msgs ...string) {
-	err := govalid.Validate(val)
-	if err == nil {
-		t.Fatalf("expected non nil err; found nil")
-	}
-	for _, msg := range msgs {
-		if !strings.Contains(err.Error(), msg) {
-			t.Fatalf("expected vio to include %s; got %s", msg, err.Error())
-		}
-	}
 }
 
 func errMustInclude(t *testing.T, val any, msgs ...string) {
+	t.Helper()
 	err := govalid.Validate(val)
 	if err == nil {
-		t.Fatalf("expected non nil err; found nil")
+		t.Fatalf("expected non nil err; got nil")
 	}
 	for _, msg := range msgs {
 		if !strings.Contains(err.Error(), msg) {
-			t.Fatalf("expected vio to include %s; got %s", msg, err.Error())
+			t.Fatalf("expected err to include %s; got %s", msg, err)
 		}
 	}
 }
 
-func vioMustBeEmpty(t *testing.T, val any) {
+func errMustBeNil(t *testing.T, val any) {
+	t.Helper()
 	err := govalid.Validate(val)
 	if err != nil {
-		t.Fatalf("expected nil err; found %s", err)
+		t.Fatalf("expected nil err; got %s", err)
 	}
 }
 
