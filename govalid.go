@@ -107,9 +107,9 @@ func validateSlice(v reflect.Value, rules []string) error {
 	for i, rule := range rules {
 		if rule == "dive" {
 			if !v.IsZero() && i < len(rules) {
-				for i := range v.Len() {
-					if err := validate(v.Index(i), rules[i+1:]); err != nil {
-						return fmt.Errorf("index %d: %w", i, err)
+				for j := range v.Len() {
+					if err := validate(v.Index(j), rules[i+1:]); err != nil {
+						return fmt.Errorf("index %d: %w", j, err)
 					}
 				}
 			}
