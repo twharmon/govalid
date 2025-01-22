@@ -134,6 +134,16 @@ func TestValidateStringSlice(t *testing.T) {
 			A []string `valid:"min:3"`
 		}{A: []string{}}, "min", "3")
 	})
+	t.Run("ok: more elems than rules (panic check)", func(t *testing.T) {
+		errMustBeNil(t, struct {
+			A []string `valid:"dive|min:1"`
+		}{A: []string{"a", "b", "c"}})
+	})
+	t.Run("ok: more elems than rules (panic check)", func(t *testing.T) {
+		errMustInclude(t, struct {
+			A []string `valid:"dive|min:1|req"`
+		}{A: []string{"a", "b", ""}}, "required")
+	})
 }
 
 func TestValidatePointerToStringSlice(t *testing.T) {
