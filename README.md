@@ -56,7 +56,7 @@ func main() {
 ```
 
 ## Error Values
-When you call [`govalid.Validate`](govalid.go#L12) to validate a struct, it returns an error if the validation rules are not met. This error may either be a validation-specific error (an implementation of [`govalid.ValidationError`](error.go)) or a different error indicating a problem in processing the validation. This allows you to distinguish between errors caused by invalid data and those caused by issues in your validation logic, such as setting the `valid` tag to `max:no-a-number`.
+When you call [`govalid.Validate`](govalid.go#L12) to validate a struct, it returns an error if the validation rules are not met. This error may either be a validation-specific error (an implementation of [`govalid.ValidationError`](error.go)) or a different error indicating a problem in processing the validation. This allows you to distinguish between errors caused by invalid data and those caused by issues in your validation logic, such as setting the `valid` tag to `max:not-a-number`.
 
 ```go
 if err := govalid.Validate(value); err != nil {
