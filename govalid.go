@@ -68,7 +68,7 @@ func validateStruct(rv reflect.Value, rules []string) error {
 		fv := rv.Field(i)
 		parts := strings.Split(tag, "|")
 		if err := validate(fv, parts); err != nil {
-			return fmt.Errorf("field %s: %w", sf.Name, err)
+			return wrap(fmt.Sprintf("field %s", sf.Name), err)
 		}
 	}
 	return nil
@@ -77,7 +77,7 @@ func validateStruct(rv reflect.Value, rules []string) error {
 func validatePointer(v reflect.Value, rules []string) error {
 	req := isReq(rules)
 	if req && v.IsNil() {
-		return errors.New("required")
+		return NewValidationError("required")
 	}
 	if !req && v.IsNil() {
 		return nil
@@ -99,7 +99,7 @@ func validatePointer(v reflect.Value, rules []string) error {
 func validateSlice(v reflect.Value, rules []string) error {
 	req := isReq(rules)
 	if req && v.IsNil() {
-		return errors.New("required")
+		return NewValidationError("required")
 	}
 	if !req && v.IsNil() {
 		return nil
@@ -109,7 +109,7 @@ func validateSlice(v reflect.Value, rules []string) error {
 			if !v.IsZero() {
 				for j := range v.Len() {
 					if err := validate(v.Index(j), rules[i+1:]); err != nil {
-						return fmt.Errorf("index %d: %w", j, err)
+						return wrap(fmt.Sprintf("index %d", j), err)
 					}
 				}
 			}
@@ -121,7 +121,7 @@ func validateSlice(v reflect.Value, rules []string) error {
 		}
 		if ok {
 			if uint64(v.Len()) > max {
-				return fmt.Errorf("max %d", max)
+				return NewValidationError(fmt.Sprintf("max %d", max))
 			}
 			continue
 		}
@@ -131,7 +131,7 @@ func validateSlice(v reflect.Value, rules []string) error {
 		}
 		if ok {
 			if uint64(v.Len()) < min {
-				return fmt.Errorf("min %d", min)
+				return NewValidationError(fmt.Sprintf("min %d", min))
 			}
 			continue
 		}
@@ -145,7 +145,7 @@ func validateSlice(v reflect.Value, rules []string) error {
 func validateFloat(v float64, rules []string) error {
 	req := isReq(rules)
 	if req && v == 0 {
-		return errors.New("required")
+		return NewValidationError("required")
 	}
 	if !req && v == 0 {
 		return nil
@@ -157,7 +157,7 @@ func validateFloat(v float64, rules []string) error {
 		}
 		if ok {
 			if v > max {
-				return fmt.Errorf("max %f", max)
+				return NewValidationError(fmt.Sprintf("max %f", max))
 			}
 			continue
 		}
@@ -167,7 +167,7 @@ func validateFloat(v float64, rules []string) error {
 		}
 		if ok {
 			if v < min {
-				return fmt.Errorf("min %f", min)
+				return NewValidationError(fmt.Sprintf("min %f", min))
 			}
 			continue
 		}
@@ -181,7 +181,7 @@ func validateFloat(v float64, rules []string) error {
 func validateInt(v int64, rules []string) error {
 	req := isReq(rules)
 	if req && v == 0 {
-		return errors.New("required")
+		return NewValidationError("required")
 	}
 	if !req && v == 0 {
 		return nil
@@ -193,7 +193,7 @@ func validateInt(v int64, rules []string) error {
 		}
 		if ok {
 			if v > max {
-				return fmt.Errorf("max %d", max)
+				return NewValidationError(fmt.Sprintf("max %d", max))
 			}
 			continue
 		}
@@ -203,7 +203,7 @@ func validateInt(v int64, rules []string) error {
 		}
 		if ok {
 			if v < min {
-				return fmt.Errorf("min %d", min)
+				return NewValidationError(fmt.Sprintf("min %d", min))
 			}
 			continue
 		}
@@ -217,7 +217,7 @@ func validateInt(v int64, rules []string) error {
 func validateUint(v uint64, rules []string) error {
 	req := isReq(rules)
 	if req && v == 0 {
-		return errors.New("required")
+		return NewValidationError("required")
 	}
 	if !req && v == 0 {
 		return nil
@@ -229,7 +229,7 @@ func validateUint(v uint64, rules []string) error {
 		}
 		if ok {
 			if v > max {
-				return fmt.Errorf("max %d", max)
+				return NewValidationError(fmt.Sprintf("max %d", max))
 			}
 			continue
 		}
@@ -239,7 +239,7 @@ func validateUint(v uint64, rules []string) error {
 		}
 		if ok {
 			if v < min {
-				return fmt.Errorf("min %d", min)
+				return NewValidationError(fmt.Sprintf("min %d", min))
 			}
 			continue
 		}
@@ -253,7 +253,7 @@ func validateUint(v uint64, rules []string) error {
 func validateString(v string, rules []string) error {
 	req := isReq(rules)
 	if req && v == "" {
-		return errors.New("required")
+		return NewValidationError("required")
 	}
 	if !req && v == "" {
 		return nil
@@ -265,7 +265,7 @@ func validateString(v string, rules []string) error {
 		}
 		if ok {
 			if uint64(len(v)) > max {
-				return fmt.Errorf("max %d", max)
+				return NewValidationError(fmt.Sprintf("max %d", max))
 			}
 			continue
 		}
@@ -275,7 +275,7 @@ func validateString(v string, rules []string) error {
 		}
 		if ok {
 			if uint64(len(v)) < min {
-				return fmt.Errorf("min %d", min)
+				return NewValidationError(fmt.Sprintf("min %d", min))
 			}
 			continue
 		}
