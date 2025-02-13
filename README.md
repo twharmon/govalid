@@ -40,8 +40,10 @@ func main() {
 			if float64(strings.Count(tv, "!"))/float64(utf8.RuneCountInString(tv)) > 0.001 {
 				return nil
 			}
-			return errors.New("must contain more exclamation marks")
+			// return a validation error with govalid.Error
+			return govalid.NewValidationError("must contain more exclamation marks")
 		default:
+			// return a non validation (internal) error
 			return errors.New("fun constraint must be applied to string only")
 		}
 	})
@@ -53,10 +55,24 @@ func main() {
 }
 ```
 
-## Advanced Usage: Dive
+## Error Values
+When you call [`govalid.Validate`](govalid.go#L12) to validate a struct, it returns an error if the validation rules are not met. This error may either be a validation-specific error (an implementation of [`govalid.ValidationError`](error.go)) or a different error indicating a problem in processing the validation. This allows you to distinguish between errors caused by invalid data and those caused by issues in your validation logic, such as setting the `valid` tag to `max:no-a-number`.
+
+```go
+if err := govalid.Validate(value); err != nil {
+	verr, ok := err.(govalid.ValidationError)
+	if ok {
+		fmt.Println("validation error", err)
+	} else {
+		fmt.Println("some other error", err)
+	}
+}
+```
+
+## Dive Usage
 The `dive` rule is used to apply validation rules to elements within pointers, slices, arrays, and structs. When the `dive` rule is encountered, it instructs the validator to "dive" into the elements of the collection or the value pointed to by a pointer and apply the remaining rules to each element or the dereferenced value.
 
-### Usage
+### Notes
 - **Pointers**: The `dive` rule will dereference the pointer and apply the remaining rules to the value it points to.
 - **Slices/Arrays**: The `dive` rule will iterate over each element in the slice or array and apply the remaining rules to each element.
 - **Structs**: The `dive` rule will validate the struct according to its own field tags. The remaining rules after `dive` have no meaning for structs.
