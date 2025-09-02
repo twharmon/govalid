@@ -13,8 +13,8 @@ func BenchmarkValidateStringReqInvalid(b *testing.B) {
 		Name string `valid:"req"`
 	}
 	user := User{}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+
+	for b.Loop() {
 		govalid.Validate(&user)
 	}
 }
@@ -24,8 +24,8 @@ func BenchmarkValidateStringReqValid(b *testing.B) {
 		Name string `valid:"req"`
 	}
 	user := User{"foo"}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+
+	for b.Loop() {
 		govalid.Validate(&user)
 	}
 }
@@ -64,8 +64,8 @@ func BenchmarkValidateVariety(b *testing.B) {
 		Role: "super_admin",
 		Age:  10,
 	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+
+	for b.Loop() {
 		govalid.Validate(&user)
 	}
 }

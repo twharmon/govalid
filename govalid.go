@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -297,8 +298,8 @@ func customRule(v any, rule string) error {
 
 func getIntSize(rule string, ty string) (int64, bool, error) {
 	prefix := fmt.Sprintf("%s:", ty)
-	if strings.HasPrefix(rule, prefix) {
-		s := strings.TrimPrefix(rule, prefix)
+	if after, ok := strings.CutPrefix(rule, prefix); ok {
+		s := after
 		i, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
 			return 0, false, err
@@ -310,8 +311,8 @@ func getIntSize(rule string, ty string) (int64, bool, error) {
 
 func getUintSize(rule string, ty string) (uint64, bool, error) {
 	prefix := fmt.Sprintf("%s:", ty)
-	if strings.HasPrefix(rule, prefix) {
-		s := strings.TrimPrefix(rule, prefix)
+	if after, ok := strings.CutPrefix(rule, prefix); ok {
+		s := after
 		i, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
 			return 0, false, err
@@ -323,8 +324,8 @@ func getUintSize(rule string, ty string) (uint64, bool, error) {
 
 func getFloatSize(rule string, ty string) (float64, bool, error) {
 	prefix := fmt.Sprintf("%s:", ty)
-	if strings.HasPrefix(rule, prefix) {
-		s := strings.TrimPrefix(rule, prefix)
+	if after, ok := strings.CutPrefix(rule, prefix); ok {
+		s := after
 		i, err := strconv.ParseFloat(s, 64)
 		if err != nil {
 			return 0, false, err
@@ -335,10 +336,5 @@ func getFloatSize(rule string, ty string) (float64, bool, error) {
 }
 
 func isReq(rules []string) bool {
-	for _, rule := range rules {
-		if rule == "req" {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(rules, "req")
 }
