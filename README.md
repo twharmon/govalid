@@ -60,9 +60,8 @@ When you call `govalid.Validate` to validate a struct, it returns an error if th
 
 ```go
 if err := govalid.Validate(value); err != nil {
-	verr, ok := err.(govalid.ValidationError)
-	if ok {
-		fmt.Println("validation error", err)
+	if verr, ok := err.(govalid.ValidationError); ok {
+		fmt.Println("validation error", verr)
 	} else {
 		fmt.Println("some other error", err)
 	}
