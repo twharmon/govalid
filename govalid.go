@@ -208,6 +208,21 @@ func validateInt(v int64, rules []string) error {
 			}
 			continue
 		}
+		if values, ok := getInValues(rule); ok {
+			validValues := make([]string, 0, len(values))
+			found := false
+			for _, valStr := range values {
+				validValues = append(validValues, valStr)
+				if val, err := strconv.ParseInt(valStr, 10, 64); err == nil && v == val {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return NewValidationError(fmt.Sprintf("in %s", strings.Join(validValues, ",")))
+			}
+			continue
+		}
 		if err := customRule(v, rule); err != nil {
 			return err
 		}
@@ -244,6 +259,21 @@ func validateUint(v uint64, rules []string) error {
 			}
 			continue
 		}
+		if values, ok := getInValues(rule); ok {
+			validValues := make([]string, 0, len(values))
+			found := false
+			for _, valStr := range values {
+				validValues = append(validValues, valStr)
+				if val, err := strconv.ParseUint(valStr, 10, 64); err == nil && v == val {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return NewValidationError(fmt.Sprintf("in %s", strings.Join(validValues, ",")))
+			}
+			continue
+		}
 		if err := customRule(v, rule); err != nil {
 			return err
 		}
@@ -277,6 +307,12 @@ func validateString(v string, rules []string) error {
 		if ok {
 			if uint64(len(v)) < min {
 				return NewValidationError(fmt.Sprintf("min %d", min))
+			}
+			continue
+		}
+		if values, ok := getInValues(rule); ok {
+			if !slices.Contains(values, v) {
+				return NewValidationError(fmt.Sprintf("in %s", strings.Join(values, ",")))
 			}
 			continue
 		}
@@ -333,6 +369,18 @@ func getFloatSize(rule string, ty string) (float64, bool, error) {
 		return i, true, nil
 	}
 	return 0, false, nil
+}
+
+func getInValues(rule string) ([]string, bool) {
+	prefix := "in:"
+	if after, ok := strings.CutPrefix(rule, prefix); ok {
+		values := strings.Split(after, ",")
+		for i := range values {
+			values[i] = strings.TrimSpace(values[i])
+		}
+		return values, true
+	}
+	return nil, false
 }
 
 func isReq(rules []string) bool {
