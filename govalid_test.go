@@ -81,6 +81,26 @@ func TestValidateString(t *testing.T) {
 			A string `valid:"max:3"`
 		}{A: "abc"})
 	})
+	t.Run("fail: in", func(t *testing.T) {
+		validationErrMustInclude(t, struct {
+			A string `valid:"in:foo,bar,baz"`
+		}{A: "qux"}, "in", "foo,bar,baz")
+	})
+	t.Run("ok: in", func(t *testing.T) {
+		errMustBeNil(t, struct {
+			A string `valid:"in:foo,bar,baz"`
+		}{A: "bar"})
+	})
+	t.Run("ok: in with spaces", func(t *testing.T) {
+		errMustBeNil(t, struct {
+			A string `valid:"in: foo , bar , baz "`
+		}{A: "bar"})
+	})
+	t.Run("fail: in case sensitive", func(t *testing.T) {
+		validationErrMustInclude(t, struct {
+			A string `valid:"in:foo,bar,baz"`
+		}{A: "BAR"}, "in", "foo,bar,baz")
+	})
 }
 
 func TestValidateStringSlice(t *testing.T) {
@@ -238,6 +258,21 @@ func TestValidateInt(t *testing.T) {
 	t.Run("ok: max", func(t *testing.T) {
 		errMustBeNil(t, C{C: 3})
 	})
+	t.Run("fail: in", func(t *testing.T) {
+		validationErrMustInclude(t, struct {
+			A int `valid:"in:1,2,3"`
+		}{A: 4}, "in", "1,2,3")
+	})
+	t.Run("ok: in", func(t *testing.T) {
+		errMustBeNil(t, struct {
+			A int `valid:"in:1,2,3"`
+		}{A: 2})
+	})
+	t.Run("ok: in with spaces", func(t *testing.T) {
+		errMustBeNil(t, struct {
+			A int `valid:"in: 1 , 2 , 3 "`
+		}{A: 2})
+	})
 }
 
 func TestValidateUint(t *testing.T) {
@@ -249,6 +284,21 @@ func TestValidateUint(t *testing.T) {
 	})
 	t.Run("ok: required", func(t *testing.T) {
 		errMustBeNil(t, A{A: 1})
+	})
+	t.Run("fail: in", func(t *testing.T) {
+		validationErrMustInclude(t, struct {
+			A uint `valid:"in:1,2,3"`
+		}{A: 4}, "in", "1,2,3")
+	})
+	t.Run("ok: in", func(t *testing.T) {
+		errMustBeNil(t, struct {
+			A uint `valid:"in:1,2,3"`
+		}{A: 2})
+	})
+	t.Run("ok: in with spaces", func(t *testing.T) {
+		errMustBeNil(t, struct {
+			A uint `valid:"in: 1 , 2 , 3 "`
+		}{A: 2})
 	})
 }
 

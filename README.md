@@ -107,6 +107,22 @@ type Outer struct {
 ```
 In this example, the InnerStruct field will be validated according to the validation tags defined in the Inner struct.
 
+## In Rule
+
+The `in` rule validates that a value is one of a specified set of values. Values are comma-separated and whitespace is trimmed. The rule is case-sensitive for strings.
+
+```go
+type Example struct {
+    // Status must be one of: active, inactive, or pending
+    Status string `valid:"in:active,inactive,pending"`
+
+    // Code must be 1, 2, or 3
+    Code int `valid:"in:1,2,3"`
+}
+```
+
+The `in` rule works with strings, all integer types (int, int8-64), and all unsigned integer types (uint, uint8-64).
+
 
 ## Contribute
 
