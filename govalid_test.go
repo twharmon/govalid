@@ -399,3 +399,41 @@ func errMustBeNil(t *testing.T, val any) {
 func ptr[T any](v T) *T {
 	return &v
 }
+
+func TestValidator(t *testing.T) {
+	v := govalid.New()
+	type A struct {
+		A string `valid:"req"`
+	}
+	t.Run("fail", func(t *testing.T) {
+		err := v.Validate(A{})
+		if err == nil {
+			t.Fatal("expected error")
+		}
+	})
+	t.Run("ok", func(t *testing.T) {
+		err := v.Validate(A{A: "a"})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+	t.Run("custom rule", func(t *testing.T) {
+		v.Rule("foo", func(val any) error {
+			if val.(string) != "foo" {
+				return errors.New("must be foo")
+			}
+			return nil
+		})
+		type B struct {
+			B string `valid:"foo"`
+		}
+		err := v.Validate(B{B: "bar"})
+		if err == nil {
+			t.Fatal("expected error")
+		}
+		err = v.Validate(B{B: "foo"})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+}
