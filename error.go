@@ -1,7 +1,7 @@
 package govalid
 
 import (
-	"fmt"
+	"errors"
 )
 
 type ValidationError interface {
@@ -30,9 +30,10 @@ func NewValidationError(msg string) ValidationError {
 func wrap(prefix string, err error) error {
 	verr, ok := err.(*validationError)
 	if ok {
-		return NewValidationError(fmt.Sprintf("%s: %s", prefix, verr))
+		return NewValidationError(prefix + ": " + verr.Error())
 	}
-	return fmt.Errorf("%s: %w", prefix, err)
+
+	return errors.New(prefix + ": " + err.Error())
 }
 
 var _ error = (*validationError)(nil)

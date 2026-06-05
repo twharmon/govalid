@@ -2,7 +2,6 @@ package govalid
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"slices"
 	"strconv"
@@ -24,7 +23,7 @@ func Validate(v any) error {
 		return errors.New("can not validate nil")
 	}
 	if rv.Kind() != reflect.Struct {
-		return fmt.Errorf("can not validate value of kind %s", rv.Kind())
+		return errors.New("can not validate value of kind " + rv.Kind().String())
 	}
 	return validateStruct(rv, nil)
 }
@@ -69,7 +68,7 @@ func validateStruct(rv reflect.Value, rules []string) error {
 		fv := rv.Field(i)
 		parts := strings.Split(tag, "|")
 		if err := validate(fv, parts); err != nil {
-			return wrap(fmt.Sprintf("field %s", sf.Name), err)
+			return wrap("field "+sf.Name, err)
 		}
 	}
 	return nil
@@ -110,7 +109,7 @@ func validateSlice(v reflect.Value, rules []string) error {
 			if !v.IsZero() {
 				for j := range v.Len() {
 					if err := validate(v.Index(j), rules[i+1:]); err != nil {
-						return wrap(fmt.Sprintf("index %d", j), err)
+						return wrap("index "+strconv.Itoa(j), err)
 					}
 				}
 			}
@@ -122,7 +121,7 @@ func validateSlice(v reflect.Value, rules []string) error {
 		}
 		if ok {
 			if uint64(v.Len()) > max {
-				return NewValidationError(fmt.Sprintf("max %d", max))
+				return NewValidationError("max " + strconv.FormatUint(max, 10))
 			}
 			continue
 		}
@@ -132,7 +131,7 @@ func validateSlice(v reflect.Value, rules []string) error {
 		}
 		if ok {
 			if uint64(v.Len()) < min {
-				return NewValidationError(fmt.Sprintf("min %d", min))
+				return NewValidationError("min " + strconv.FormatUint(min, 10))
 			}
 			continue
 		}
@@ -158,7 +157,7 @@ func validateFloat(v float64, rules []string) error {
 		}
 		if ok {
 			if v > max {
-				return NewValidationError(fmt.Sprintf("max %f", max))
+				return NewValidationError("max " + strconv.FormatFloat(max, 'f', 2, 64))
 			}
 			continue
 		}
@@ -168,7 +167,7 @@ func validateFloat(v float64, rules []string) error {
 		}
 		if ok {
 			if v < min {
-				return NewValidationError(fmt.Sprintf("min %f", min))
+				return NewValidationError("min " + strconv.FormatFloat(min, 'f', 2, 64))
 			}
 			continue
 		}
@@ -194,7 +193,7 @@ func validateInt(v int64, rules []string) error {
 		}
 		if ok {
 			if v > max {
-				return NewValidationError(fmt.Sprintf("max %d", max))
+				return NewValidationError("max " + strconv.FormatInt(max, 10))
 			}
 			continue
 		}
@@ -204,7 +203,7 @@ func validateInt(v int64, rules []string) error {
 		}
 		if ok {
 			if v < min {
-				return NewValidationError(fmt.Sprintf("min %d", min))
+				return NewValidationError("min " + strconv.FormatInt(min, 10))
 			}
 			continue
 		}
@@ -219,7 +218,7 @@ func validateInt(v int64, rules []string) error {
 				}
 			}
 			if !found {
-				return NewValidationError(fmt.Sprintf("in %s", strings.Join(validValues, ",")))
+				return NewValidationError("in " + strings.Join(validValues, ","))
 			}
 			continue
 		}
@@ -245,7 +244,7 @@ func validateUint(v uint64, rules []string) error {
 		}
 		if ok {
 			if v > max {
-				return NewValidationError(fmt.Sprintf("max %d", max))
+				return NewValidationError("max " + strconv.FormatUint(max, 10))
 			}
 			continue
 		}
@@ -255,7 +254,7 @@ func validateUint(v uint64, rules []string) error {
 		}
 		if ok {
 			if v < min {
-				return NewValidationError(fmt.Sprintf("min %d", min))
+				return NewValidationError("mind " + strconv.FormatUint(min, 10))
 			}
 			continue
 		}
@@ -270,7 +269,7 @@ func validateUint(v uint64, rules []string) error {
 				}
 			}
 			if !found {
-				return NewValidationError(fmt.Sprintf("in %s", strings.Join(validValues, ",")))
+				return NewValidationError("in " + strings.Join(validValues, ","))
 			}
 			continue
 		}
@@ -296,7 +295,7 @@ func validateString(v string, rules []string) error {
 		}
 		if ok {
 			if uint64(len(v)) > max {
-				return NewValidationError(fmt.Sprintf("max %d", max))
+				return NewValidationError("max " + strconv.FormatUint(max, 10))
 			}
 			continue
 		}
@@ -306,13 +305,13 @@ func validateString(v string, rules []string) error {
 		}
 		if ok {
 			if uint64(len(v)) < min {
-				return NewValidationError(fmt.Sprintf("min %d", min))
+				return NewValidationError("min " + strconv.FormatUint(min, 10))
 			}
 			continue
 		}
 		if values, ok := getInValues(rule); ok {
 			if !slices.Contains(values, v) {
-				return NewValidationError(fmt.Sprintf("in %s", strings.Join(values, ",")))
+				return NewValidationError("in " + strings.Join(values, ","))
 			}
 			continue
 		}
@@ -333,7 +332,7 @@ func customRule(v any, rule string) error {
 }
 
 func getIntSize(rule string, ty string) (int64, bool, error) {
-	prefix := fmt.Sprintf("%s:", ty)
+	prefix := ty + ":"
 	if after, ok := strings.CutPrefix(rule, prefix); ok {
 		s := after
 		i, err := strconv.ParseInt(s, 10, 64)
@@ -346,7 +345,7 @@ func getIntSize(rule string, ty string) (int64, bool, error) {
 }
 
 func getUintSize(rule string, ty string) (uint64, bool, error) {
-	prefix := fmt.Sprintf("%s:", ty)
+	prefix := ty + ":"
 	if after, ok := strings.CutPrefix(rule, prefix); ok {
 		s := after
 		i, err := strconv.ParseUint(s, 10, 64)
@@ -359,7 +358,7 @@ func getUintSize(rule string, ty string) (uint64, bool, error) {
 }
 
 func getFloatSize(rule string, ty string) (float64, bool, error) {
-	prefix := fmt.Sprintf("%s:", ty)
+	prefix := ty + ":"
 	if after, ok := strings.CutPrefix(rule, prefix); ok {
 		s := after
 		i, err := strconv.ParseFloat(s, 64)
